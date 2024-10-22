@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
@@ -15,16 +16,7 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file.", err)
-	}
-
-	var ctx context.Context = context.Background()
-	var API_KEY string = os.Getenv("YOUTUBE_API_KEY")
-	var co option.ClientOption = option.WithAPIKey(API_KEY)
-
-	youtubeService, err := youtube.NewService(ctx, co)
-	if err != nil {
-		log.Fatal("Unable to create a YT service.", err)
+		log.Fatal("Error loading the .env file.", err)
 	}
 
 	var args []string = os.Args
@@ -32,30 +24,57 @@ func main() {
 		log.Fatal("Please provide a YouTube video ID")
 	}
 
+	var apiKey string = os.Getenv("YOUTUBE_API_KEY")
+	var videoID string = strings.TrimSpace(args[1])
+	video := getVideo(apiKey, videoID)
+	printVideoInfo(video)
+
+}
+
+func getVideo(apiKey string, videoID string) *youtube.Video {
+	var ctx context.Context = context.Background()
+	var co option.ClientOption = option.WithAPIKey(apiKey)
+	youtubeService, err := youtube.NewService(ctx, co)
+
+	if err != nil {
+		log.Fatal("Unable to create a YT service.", err)
+	}
+
 	// https://pkg.go.dev/google.golang.org/api@v0.201.0/youtube/v3#VideoListResponse
-	video_id := strings.TrimSpace(args[1])
 	part := []string{"status", "snippet", "contentDetails"}
-	response, err := youtubeService.Videos.List(part).Id(video_id).Do()
+	response, err := youtubeService.Videos.List(part).Id(videoID).Do()
 	if err != nil {
 		log.Fatal("Unable to get a response from YouTube.", err)
 	}
 
 	var videoList []*youtube.Video = response.Items
 	if len(videoList) == 0 {
-		log.Fatal("Probably no such video:", video_id)
+		log.Fatal("Probably no such video:", videoID)
 	}
 
 	// https://pkg.go.dev/google.golang.org/api@v0.201.0/youtube/v3#Video
-	var video *youtube.Video = videoList[0]
-	fmt.Println(video.Snippet.Title)
-	fmt.Println(video.Status.PrivacyStatus)
-	fmt.Println(video.ContentDetails.ContentRating.YtRating)
-	fmt.Println(video.Status.Embeddable)
-	regionRestriction := video.ContentDetails.RegionRestriction
-	if regionRestriction != nil {
-		fmt.Println(video.ContentDetails.RegionRestriction.Blocked)
+	return videoList[0]
+}
+
+func printVideoInfo(video *youtube.Video) {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.Debug)
+
+	// fmt.Fprintln(w, "Title\t", video.Snippet.Title)
+	fmt.Fprintln(w, "Privacy Status\t", video.Status.PrivacyStatus)
+	rating := video.ContentDetails.ContentRating.YtRating
+	fmt.Fprintln(w, "Age Restricted\t", rating == "ytAgeRestricted")
+	fmt.Fprintln(w, "Embeddable\t", video.Status.Embeddable)
+
+	restriction := video.ContentDetails.RegionRestriction
+	switch restriction {
+	case nil:
+		fmt.Fprintln(w, "Region Restricted \t none")
+	default:
+		fmt.Fprintln(w, "Region Restricted\t", restriction.Blocked)
 	}
-	fmt.Println(video.Snippet.DefaultLanguage)
-	fmt.Println(video.Snippet.LiveBroadcastContent)
-	fmt.Println(video.ContentDetails.Duration)
+
+	// fmt.Fprintln(w, "Default Labguage\t", video.Snippet.DefaultLanguage)
+	fmt.Fprintln(w, "Live Broadcast\t", video.Snippet.LiveBroadcastContent)
+	fmt.Fprintln(w, "Duration\t", video.ContentDetails.Duration)
+	w.Flush()
 }
