@@ -37,7 +37,7 @@ func getVideo(apiKey string, videoID string) *youtube.Video {
 	youtubeService, err := youtube.NewService(ctx, co)
 
 	if err != nil {
-		log.Fatal("Unable to create a YT service.", err)
+		log.Fatal("Unable to create a YouTube service.", err)
 	}
 
 	// https://pkg.go.dev/google.golang.org/api@v0.201.0/youtube/v3#VideoListResponse
@@ -68,7 +68,7 @@ func printVideoInfo(video *youtube.Video) {
 	restriction := video.ContentDetails.RegionRestriction
 	switch restriction {
 	case nil:
-		fmt.Fprintln(w, "Region Restricted \t none")
+		fmt.Fprintln(w, "Region Restricted \t false")
 	default:
 		fmt.Fprintln(w, "Region Restricted\t", restriction.Blocked)
 	}
