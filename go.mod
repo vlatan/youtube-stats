@@ -3,6 +3,7 @@ module youtube-check
 go 1.23.0
 
 require (
+	github.com/fatih/color v1.18.0
 	github.com/joho/godotenv v1.5.1
 	google.golang.org/api v0.201.0
 )
@@ -19,6 +20,8 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect
 	go.opentelemetry.io/otel v1.29.0 // indirect

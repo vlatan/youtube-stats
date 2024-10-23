@@ -8,10 +8,13 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/fatih/color"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
+
+const borderLen = 19
 
 func main() {
 	err := godotenv.Load()
@@ -28,7 +31,6 @@ func main() {
 	var videoID string = strings.TrimSpace(args[1])
 	video := getVideo(apiKey, videoID)
 	printVideoInfo(video)
-
 }
 
 func getVideo(apiKey string, videoID string) *youtube.Video {
@@ -58,23 +60,39 @@ func getVideo(apiKey string, videoID string) *youtube.Video {
 
 func printVideoInfo(video *youtube.Video) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.Debug)
+	borderColor := color.New(color.FgYellow, color.Bold)
+	border := strings.Repeat("-", borderLen)
+	border = fmt.Sprint(border, "\t", border)
+	tab := borderColor.Sprint("\t ")
 
-	// fmt.Fprintln(w, "Title\t", video.Snippet.Title)
-	fmt.Fprintln(w, "Privacy Status\t", video.Status.PrivacyStatus)
-	rating := video.ContentDetails.ContentRating.YtRating
-	fmt.Fprintln(w, "Age Restricted\t", rating == "ytAgeRestricted")
-	fmt.Fprintln(w, "Embeddable\t", video.Status.Embeddable)
-
-	restriction := video.ContentDetails.RegionRestriction
-	switch restriction {
-	case nil:
-		fmt.Fprintln(w, "Region Restricted \t false")
-	default:
-		fmt.Fprintln(w, "Region Restricted\t", restriction.Blocked)
+	stats := []string{
+		// fmt.Sprint("Title", tab, video.Snippet.Title),
+		fmt.Sprint("Privacy Status", tab, video.Status.PrivacyStatus),
+		fmt.Sprint("Age Restricted", tab, ageRestriction(video)),
+		fmt.Sprint("Embeddable", tab, video.Status.Embeddable),
+		fmt.Sprint("Region Restricted", tab, regionRestriction(video)),
+		// fmt.Sprint("Default Labguage", tab, video.Snippet.DefaultLanguage),
+		fmt.Sprint("Live Broadcast", tab, video.Snippet.LiveBroadcastContent),
+		fmt.Sprint("Duration", tab, video.ContentDetails.Duration),
 	}
 
-	// fmt.Fprintln(w, "Default Labguage\t", video.Snippet.DefaultLanguage)
-	fmt.Fprintln(w, "Live Broadcast\t", video.Snippet.LiveBroadcastContent)
-	fmt.Fprintln(w, "Duration\t", video.ContentDetails.Duration)
+	borderColor.Fprintln(w, border)
+	for _, stat := range stats {
+		fmt.Fprintln(w, stat)
+		borderColor.Fprintln(w, border)
+	}
 	w.Flush()
+}
+
+func regionRestriction(video *youtube.Video) []string {
+	restriction := video.ContentDetails.RegionRestriction
+	if restriction == nil {
+		return []string{}
+	}
+	return restriction.Blocked
+}
+
+func ageRestriction(video *youtube.Video) bool {
+	rating := video.ContentDetails.ContentRating.YtRating
+	return rating == "ytAgeRestricted"
 }
