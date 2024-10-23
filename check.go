@@ -17,9 +17,10 @@ import (
 const borderLen = 19
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading the .env file.", err)
+	godotenv.Load()
+	var apiKey string = os.Getenv("YOUTUBE_API_KEY")
+	if len(apiKey) == 0 {
+		log.Fatal("Please set YOUTUBE_API_KEY environment variable.")
 	}
 
 	var args []string = os.Args
@@ -27,9 +28,7 @@ func main() {
 		log.Fatal("Please provide a YouTube video ID")
 	}
 
-	var apiKey string = os.Getenv("YOUTUBE_API_KEY")
-	var videoID string = strings.TrimSpace(args[1])
-	video := getVideo(apiKey, videoID)
+	var video *youtube.Video = getVideo(apiKey, args[1])
 	printVideoInfo(video)
 }
 
@@ -51,7 +50,7 @@ func getVideo(apiKey string, videoID string) *youtube.Video {
 
 	var videoList []*youtube.Video = response.Items
 	if len(videoList) == 0 {
-		log.Fatal("Probably no such video:", videoID)
+		log.Fatal("Probably no such video with this ID: ", videoID)
 	}
 
 	// https://pkg.go.dev/google.golang.org/api@v0.201.0/youtube/v3#Video
