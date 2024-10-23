@@ -60,10 +60,10 @@ func getVideo(apiKey string, videoID string) *youtube.Video {
 
 func printVideoInfo(video *youtube.Video) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.Debug)
-	borderColor := color.New(color.FgYellow, color.Bold)
+	yellow := color.New(color.FgYellow, color.Bold)
 	border := strings.Repeat("-", borderLen)
 	border = fmt.Sprint(border, "\t", border)
-	tab := borderColor.Sprint("\t ")
+	tab := yellow.Sprint("\t ")
 
 	stats := []string{
 		// fmt.Sprint("Title", tab, video.Snippet.Title),
@@ -76,10 +76,10 @@ func printVideoInfo(video *youtube.Video) {
 		fmt.Sprint("Duration", tab, video.ContentDetails.Duration),
 	}
 
-	borderColor.Fprintln(w, border)
+	yellow.Fprintln(w, border)
 	for _, stat := range stats {
 		fmt.Fprintln(w, stat)
-		borderColor.Fprintln(w, border)
+		yellow.Fprintln(w, border)
 	}
 	w.Flush()
 }
