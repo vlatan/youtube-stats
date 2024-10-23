@@ -1,4 +1,4 @@
-module youtube-check
+module github.com/vlatan/youtube-stats
 
 go 1.23.0
 
