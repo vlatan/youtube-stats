@@ -35,10 +35,11 @@ func main() {
 // Get video object using:
 // https://pkg.go.dev/google.golang.org/api@v0.201.0/youtube/v3
 func getVideo(apiKey string, videoID string) *youtube.Video {
+
 	var ctx context.Context = context.Background()
 	var co option.ClientOption = option.WithAPIKey(apiKey)
-	youtubeService, err := youtube.NewService(ctx, co)
 
+	youtubeService, err := youtube.NewService(ctx, co)
 	if err != nil {
 		log.Fatal("Unable to create a YouTube service.", err)
 	}
