@@ -32,6 +32,8 @@ func main() {
 	printVideoInfo(video)
 }
 
+// Get video object using:
+// https://pkg.go.dev/google.golang.org/api@v0.201.0/youtube/v3
 func getVideo(apiKey string, videoID string) *youtube.Video {
 	var ctx context.Context = context.Background()
 	var co option.ClientOption = option.WithAPIKey(apiKey)
@@ -41,7 +43,6 @@ func getVideo(apiKey string, videoID string) *youtube.Video {
 		log.Fatal("Unable to create a YouTube service.", err)
 	}
 
-	// https://pkg.go.dev/google.golang.org/api@v0.201.0/youtube/v3#VideoListResponse
 	part := []string{"status", "snippet", "contentDetails"}
 	response, err := youtubeService.Videos.List(part).Id(videoID).Do()
 	if err != nil {
@@ -53,7 +54,6 @@ func getVideo(apiKey string, videoID string) *youtube.Video {
 		log.Fatal("Probably no such video with this ID: ", videoID)
 	}
 
-	// https://pkg.go.dev/google.golang.org/api@v0.201.0/youtube/v3#Video
 	return videoList[0]
 }
 
