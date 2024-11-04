@@ -1,64 +1,50 @@
-package main
+package common
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/fatih/color"
-	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
 
 const borderLen = 19
 
-func main() {
-	godotenv.Load()
-	var apiKey string = os.Getenv("YOUTUBE_API_KEY")
-	if len(apiKey) == 0 {
-		log.Fatal("Please set YOUTUBE_API_KEY environment variable.")
-	}
-
-	var args []string = os.Args
-	if len(args) <= 1 {
-		log.Fatal("Please provide a YouTube video ID")
-	}
-
-	var video *youtube.Video = getVideo(apiKey, args[1])
-	printVideoInfo(video)
-}
-
-// Get video object using:
+// Get video object using the youtybe Golang package.
 // https://pkg.go.dev/google.golang.org/api@v0.201.0/youtube/v3
-func getVideo(apiKey string, videoID string) *youtube.Video {
+func GetVideo(apiKey string, videoID string) (*youtube.Video, error) {
 
 	var ctx context.Context = context.Background()
 	var co option.ClientOption = option.WithAPIKey(apiKey)
 
 	youtubeService, err := youtube.NewService(ctx, co)
 	if err != nil {
-		log.Fatal("Unable to create a YouTube service.", err)
+		msg := fmt.Sprint("Unable to create a YouTube service.", err)
+		return nil, errors.New(msg)
 	}
 
 	part := []string{"status", "snippet", "contentDetails"}
 	response, err := youtubeService.Videos.List(part).Id(videoID).Do()
 	if err != nil {
-		log.Fatal("Unable to get a response from YouTube.", err)
+		msg := fmt.Sprint("Unable to get a response from YouTube.", err)
+		return nil, errors.New(msg)
 	}
 
 	var videoList []*youtube.Video = response.Items
 	if len(videoList) == 0 {
-		log.Fatal("Probably no such video with this ID: ", videoID)
+		msg := fmt.Sprint("Probably no such video with this ID: ", videoID)
+		return nil, errors.New(msg)
 	}
 
-	return videoList[0]
+	return videoList[0], nil
 }
 
-func printVideoInfo(video *youtube.Video) {
+func PrintVideoInfo(video *youtube.Video) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.Debug)
 	yellow := color.New(color.FgYellow, color.Bold)
 	border := strings.Repeat("-", borderLen)
@@ -68,10 +54,10 @@ func printVideoInfo(video *youtube.Video) {
 	stats := []string{
 		// fmt.Sprint("Title", tab, video.Snippet.Title),
 		fmt.Sprint("Privacy Status", tab, video.Status.PrivacyStatus),
-		fmt.Sprint("Age Restricted", tab, ageRestriction(video)),
+		fmt.Sprint("Age Restricted", tab, AgeRestriction(video)),
 		fmt.Sprint("Embeddable", tab, video.Status.Embeddable),
-		fmt.Sprint("Region Restricted", tab, regionRestriction(video)),
-		// fmt.Sprint("Default Labguage", tab, video.Snippet.DefaultLanguage),
+		fmt.Sprint("Region Restricted", tab, RegionRestriction(video)),
+		fmt.Sprint("Default Labguage", tab, video.Snippet.DefaultLanguage),
 		fmt.Sprint("Live Broadcast", tab, video.Snippet.LiveBroadcastContent),
 		fmt.Sprint("Duration", tab, video.ContentDetails.Duration),
 	}
@@ -84,7 +70,7 @@ func printVideoInfo(video *youtube.Video) {
 	w.Flush()
 }
 
-func regionRestriction(video *youtube.Video) []string {
+func RegionRestriction(video *youtube.Video) []string {
 	restriction := video.ContentDetails.RegionRestriction
 	if restriction == nil {
 		return []string{}
@@ -92,7 +78,7 @@ func regionRestriction(video *youtube.Video) []string {
 	return restriction.Blocked
 }
 
-func ageRestriction(video *youtube.Video) bool {
+func AgeRestriction(video *youtube.Video) bool {
 	rating := video.ContentDetails.ContentRating.YtRating
 	return rating == "ytAgeRestricted"
 }
