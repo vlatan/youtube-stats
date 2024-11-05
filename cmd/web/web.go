@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -24,39 +25,47 @@ type Video struct {
 }
 
 var validID = regexp.MustCompile("^([-a-zA-Z0-9_]+)$")
-
-// var templates = template.Must(template.ParseGlob(filepath.Join("web", "templates", "*.html")))
 var home = template.Must(template.ParseFiles("web/templates/index.html"))
-var content = template.Must(template.ParseFiles("web/templates/index.html", "web/templates/content.html"))
 
 func main() {
 	godotenv.Load()
 	mux := http.NewServeMux()
-	mux.HandleFunc("/{$}", makeHandler(rootHandler))
+	staticHandler := http.FileServer(http.Dir("web/static"))
+	mux.Handle("GET /static/", http.StripPrefix("/static/", staticHandler))
+	mux.HandleFunc("GET /{$}", getHandler)
+	mux.HandleFunc("POST /{$}", postHandler)
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
 
-func rootHandler(w http.ResponseWriter, r *http.Request, apiKey string) {
-	// if r.URL.Path != "/" {
-	// 	http.Redirect(w, r, "/", http.StatusFound)
-	// }
+func getHandler(w http.ResponseWriter, r *http.Request) {
+	err := home.Execute(w, nil)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+	}
+}
 
-	id := r.FormValue("id")
-	if id == "" {
-		loadTemplate(w, home, nil)
+func postHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var apiKey string = os.Getenv("YOUTUBE_API_KEY")
+	if len(apiKey) == 0 {
+		log.Fatal("Please set YOUTUBE_API_KEY environment variable.")
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
+	id := r.FormValue("id")
 	if validID.FindStringSubmatch(id) == nil {
-		log.Println("Not a valid ID")
-		loadTemplate(w, home, nil)
+		log.Println("Not a valid video ID")
+		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
 
 	response, err := common.GetVideo(apiKey, id)
 	if err != nil {
 		log.Println(err)
-		loadTemplate(w, home, nil)
+		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -72,23 +81,32 @@ func rootHandler(w http.ResponseWriter, r *http.Request, apiKey string) {
 		Duration:         response.ContentDetails.Duration,
 	}
 
-	loadTemplate(w, content, video)
-}
-
-func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var apiKey string = os.Getenv("YOUTUBE_API_KEY")
-		if len(apiKey) == 0 {
-			log.Fatal("Please set YOUTUBE_API_KEY environment variable.")
-		}
-		fn(w, r, apiKey)
+	if json.NewEncoder(w).Encode(video) != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
-func loadTemplate(w http.ResponseWriter, tmpl *template.Template, data any) {
-	err := tmpl.Execute(w, data)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
-	}
-}
+// func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
+// 	w.WriteHeader(status)
+// 	if status == http.StatusNotFound {
+// 		fmt.Fprint(w, "custom 404")
+// 	}
+// }
+
+// func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		var apiKey string = os.Getenv("YOUTUBE_API_KEY")
+// 		if len(apiKey) == 0 {
+// 			log.Fatal("Please set YOUTUBE_API_KEY environment variable.")
+// 		}
+// 		fn(w, r, apiKey)
+// 	}
+// }
+
+// func loadTemplate(w http.ResponseWriter, tmpl *template.Template, data any) {
+// 	err := tmpl.Execute(w, data)
+// 	if err != nil {
+// 		log.Println(err)
+// 		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+// 	}
+// }

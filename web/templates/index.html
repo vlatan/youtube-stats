@@ -10,13 +10,14 @@
 <body>
     This is a website.
 
-    <form>
+    <form method="POST">
         <div><input required type="text" name="id"></div>
         <div><input type="submit" value="Submit"></div>
     </form>
 
-    {{ block "content" $ }}{{ end }}
+    <div class="content"></div>
 
 </body>
+<script src="static/main.js"></script>
 
 </html>
