@@ -1,28 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const content = document.getElementById('content')
     const form = document.getElementById('myForm');
 
-    form.addEventListener('submit', handleSubmit);
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        fetch('/', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                response.json().then(data => {
+                    content.innerHTML = data.title;
+                    return
+                });
+            }
+            content.innerHTML = "Sorry no content";
+        });
+    });
 });
-
-function handleSubmit(event) {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    fetch('/your-server-endpoint', {
-        method: 'POST',
-        body: formData
-    })
-        .then(handleResponse)
-        .catch(handleError);
-}
-
-function handleResponse(response) {
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-    return response.json();
-}
-
-function handleError(error) {
-    console.error('Error:', error);
-    // Handle errors, such as displaying an error message to the user
-}
