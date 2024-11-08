@@ -81,6 +81,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		Duration:         response.ContentDetails.Duration,
 	}
 
+	// write JSON to response
 	if json.NewEncoder(w).Encode(video) != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
