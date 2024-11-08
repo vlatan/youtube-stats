@@ -13,15 +13,15 @@ import (
 )
 
 type Video struct {
-	Id               string   `json:"id,omitempty"`
-	Title            string   `json:"title,omitempty"`
-	PrivacyStatus    string   `json:"privacyStatus,omitempty"`
-	AgeRestriced     bool     `json:"ageRestriced,omitempty"`
-	Embeddable       bool     `json:"embeddable,omitempty"`
-	RegionRestricted []string `json:"regionRestricted,omitempty"`
-	DefaultLanguage  string   `json:"defaultLanguage,omitempty"`
-	LiveBroadcast    string   `json:"liveBroadcast,omitempty"`
-	Duration         string   `json:"duration,omitempty"`
+	Id               string   `json:"id"`
+	Title            string   `json:"title"`
+	PrivacyStatus    string   `json:"privacyStatus"`
+	AgeRestriced     bool     `json:"ageRestriced"`
+	Embeddable       bool     `json:"embeddable"`
+	RegionRestricted []string `json:"regionRestricted"`
+	DefaultLanguage  string   `json:"defaultLanguage"`
+	LiveBroadcast    string   `json:"liveBroadcast"`
+	Duration         string   `json:"duration"`
 }
 
 var validID = regexp.MustCompile("^([-a-zA-Z0-9_]+)$")
@@ -85,28 +85,3 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
-
-// func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
-// 	w.WriteHeader(status)
-// 	if status == http.StatusNotFound {
-// 		fmt.Fprint(w, "custom 404")
-// 	}
-// }
-
-// func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		var apiKey string = os.Getenv("YOUTUBE_API_KEY")
-// 		if len(apiKey) == 0 {
-// 			log.Fatal("Please set YOUTUBE_API_KEY environment variable.")
-// 		}
-// 		fn(w, r, apiKey)
-// 	}
-// }
-
-// func loadTemplate(w http.ResponseWriter, tmpl *template.Template, data any) {
-// 	err := tmpl.Execute(w, data)
-// 	if err != nil {
-// 		log.Println(err)
-// 		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
-// 	}
-// }
