@@ -1,4 +1,12 @@
-/* ==================== RESET CSS ==================== */
+:root {
+    --default-gap: clamp(1rem, 1rem + 2vw, 2rem);
+    --large-font-size: var(--default-gap);
+    --gap: var(--default-gap);
+    --max-site-width: 1300px;
+}
+
+
+/* ======================== CSS RESET ======================== */
 
 /* 1. Use a more-intuitive box-sizing model */
 *,
@@ -39,6 +47,7 @@ select {
 
 /* 7. Avoid text overflows */
 p,
+li,
 h1,
 h2,
 h3,
@@ -71,10 +80,132 @@ h6 {
 }
 
 
-/* ==================== CONTENT ==================== */
+/* ======================== BASICS ======================== */
+
+html {
+    font-family: system-ui, sans-serif;
+}
+
+body {
+    color: rgba(0, 0, 0, .84);
+    background-color: #f2f2f2;
+}
+
+a {
+    color: #1967d2;
+    text-decoration: none;
+}
+
+a:focus,
+a:hover {
+    text-decoration: underline;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    line-height: 1;
+    color: #313131;
+    text-rendering: optimizeLegibility;
+}
+
+h1 a,
+h2 a {
+    color: #313131;
+}
+
+
+/* ======================== CONTENT ======================== */
+
+body {
+    overflow-y: scroll;
+    background-color: #fff0e3;
+}
+
+.page-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    min-height: 100vh;
+}
+
+header.primary-header {
+    width: min(var(--max-site-width), 100% - (2 * var(--gap)));
+    margin: 0 auto;
+    padding-top: var(--gap);
+    display: flex;
+    align-items: center;
+    gap: var(--gap);
+}
+
+header.primary-header h1 {
+    font-size: var(--large-font-size);
+    display: flex;
+    align-items: center;
+}
+
+header.primary-header h1 a {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--gap) / 4);
+    text-decoration: none;
+}
+
+header.primary-header h1 a img {
+    width: clamp(1rem, 1rem + 2vw, 1.5rem);
+    height: auto;
+}
+
+main.main-content {
+    flex-grow: 1;
+    width: min(var(--max-site-width), 100% - (2 * var(--gap)));
+    margin: 0 auto;
+}
+
+#content {
+    display: grid;
+    grid-template-columns: 35% 1fr;
+    gap: var(--gap);
+}
+
+table.table-container {
+    word-break: break-word;
+    width: 100%;
+    display: table;
+    text-align: left;
+    overflow: hidden;
+    font-weight: 300;
+    border-radius: 5px;
+    margin: 0;
+}
+
+table.table-container td,
+table.table-container th {
+    padding-bottom: 2%;
+    padding-top: 2%;
+    padding-left: 2%;
+}
+
+table.table-container th {
+    font-weight: bold;
+    text-align: left;
+}
+
+/* Background-color of the odd rows */
+table.table-container tr:nth-child(odd) {
+    background-color: lightgray;
+}
+
+/* Background-color of the even rows */
+/* table.table-container tr:nth-child(even) {
+    background-color: gray;
+} */
 
 .map_container {
-    width: 80%;
+    width: 100%;
     margin: 0 auto;
 }
 
