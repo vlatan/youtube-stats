@@ -1,7 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const content = document.getElementById('content')
+    // const content = document.getElementById('content')
     const form = document.getElementById('myForm');
     const badVideo = document.getElementById('badVideo');
+
+    var countryElements = document.getElementById('countries').children;
+    for (let countryElem of countryElements) {
+        let countryName = countryElem.getAttribute('data-name');
+        countryElem.innerHTML = `<title>${countryName}</title>`;
+    }
 
     form.addEventListener('submit', event => {
         event.preventDefault();
@@ -21,18 +27,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             badVideo.innerText = "";
             response.json().then(data => {
-                const regionRestricted = data.regionRestricted.length ? data.regionRestricted : false;
-                const defaultLanguage = data.defaultLanguage || "none";
+                // const regionRestricted = data.regionRestricted.length ? data.regionRestricted : false;
+                // const defaultLanguage = data.defaultLanguage || "none";
 
                 for (const [key, value] of Object.entries(data)) {
                     document.querySelector(`td[data-id=${key}]`).innerText = value;
                 }
 
-                var countryElements = document.getElementById('countries').childNodes;
-                var countryCount = countryElements.length;
-                for (var i = 0; i < countryCount; i++) {
-                    countryElements[i].onclick = () => {
-                        alert('You clicked on ' + this.getAttribute('data-name'));
+                for (let countryCode of data.regionRestricted) {
+                    let country = document.querySelector(`path[data-id=${countryCode}]`);
+                    country.style.fill = "red";
+                    country.onmouseenter = event => {
+                        event.target.style.fill = "crimson";
+                    }
+                    country.onmouseleave = event => {
+                        event.target.style.fill = "red";
                     }
                 }
             });
