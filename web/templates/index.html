@@ -15,9 +15,14 @@
         </header>
         <main class="main-content">
             <form id="myForm" method="POST">
-                <div><input required type="text" name="id"></div>
+                <div><input required pattern="[A-Za-z0-9_\-]{11}" type="text" name="id"
+                        placeholder="YouTube video ID..." title="Valid YouTube ID only.">
+                </div>
                 <div><input type="submit" value="Submit"></div>
             </form>
+
+            <div id="badVideo"></div>
+
             <div id="content">
                 <table class="table-container">
                     <thead>

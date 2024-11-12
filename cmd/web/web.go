@@ -24,7 +24,7 @@ type Video struct {
 	Duration         string   `json:"duration"`
 }
 
-var validID = regexp.MustCompile("^([-a-zA-Z0-9_]+)$")
+var validID = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
 var home = template.Must(template.ParseFiles("web/templates/index.html"))
 
 func main() {
@@ -57,7 +57,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := r.FormValue("id")
 	if validID.FindStringSubmatch(id) == nil {
-		log.Println("Not a valid video ID")
+		log.Println("Not a valid video ID:", id)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
