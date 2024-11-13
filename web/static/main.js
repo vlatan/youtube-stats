@@ -44,6 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 for (let countryCode of data.regionRestricted) {
                     let country = document.querySelector(`path[data-id=${countryCode}]`);
+                    if (!country) {
+                        continue
+                    }
                     country.style.fill = "red";
                     country.onmouseenter = event => {
                         event.target.style.fill = "crimson";
