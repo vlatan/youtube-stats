@@ -172,25 +172,31 @@ main.main-content {
 }
 
 table.table-container {
-    word-break: break-word;
-    max-width: 100%;
-    /* width: 100%; */
     display: table;
+    table-layout: auto;
+    word-break: break-word;
+    width: 100%;
     text-align: left;
-    overflow: hidden;
     font-weight: 300;
     border-radius: 5px;
     margin: 0;
 }
 
-table.table-container td,
-table.table-container th {
-    padding: 2%;
+table.table-container,
+table.table-container th,
+table.table-container td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    text-align: left;
+    padding: 3%;
+}
+
+table.table-container #tableValue {
+    width: 60%;
 }
 
 table.table-container th {
     font-weight: bold;
-    text-align: left;
 }
 
 /* Background-color of the odd rows */
