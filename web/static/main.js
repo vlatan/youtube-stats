@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // const content = document.getElementById('content')
     const form = document.getElementById('myForm');
     const badVideo = document.getElementById('badVideo');
+    const infoCells = document.querySelectorAll('td[data-id]');
 
     var countryElements = document.getElementById('countries').children;
     for (let countryElem of countryElements) {
@@ -10,6 +11,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     form.addEventListener('submit', event => {
+
+        // reset the previous data, styles and events after submit
+        badVideo.innerText = "";
+        for (let infoCell of infoCells) {
+            infoCell.innerText = "";
+        }
+        for (let countryElem of countryElements) {
+            countryElem.removeAttribute("style");
+            countryElem.onmouseenter = () => { };
+            countryElem.onmouseleave = () => { };
+        }
+
         event.preventDefault();
         const formData = new FormData(event.target);
         fetch('/', {
@@ -18,14 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then(response => {
             if (!response.ok) {
                 badVideo.innerText = "Not been able to fetch the info for this video.";
-                const infoCells = document.querySelectorAll('td[data-id]');
-                for (let cell of infoCells) {
-                    cell.innerText = "";
-                }
                 return;
             }
 
-            badVideo.innerText = "";
             response.json().then(data => {
                 // const regionRestricted = data.regionRestricted.length ? data.regionRestricted : false;
                 // const defaultLanguage = data.defaultLanguage || "none";
