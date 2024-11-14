@@ -39,6 +39,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             response.json().then(data => {
                 for (const [key, value] of Object.entries(data)) {
+                    if (key === "regionRestricted" && !value.length) {
+                        document.querySelector(`td[data-id=${key}]`).innerText = false;
+                        continue
+                    } else if (key === "defaultLanguage" && !value) {
+                        document.querySelector(`td[data-id=${key}]`).innerText = "none";
+                        continue
+                    }
                     document.querySelector(`td[data-id=${key}]`).innerText = value;
                 }
 
