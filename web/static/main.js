@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("myForm");
-    const infoCells = document.querySelectorAll("td[data-id]");
+    const cells = document.querySelectorAll("td[data-id]");
+    const header = document.querySelector("header.primary-header");
 
     var countryElements = document.getElementById("countries").children;
     for (let countryElem of countryElements) {
@@ -14,8 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const badVideo = document.getElementById("badVideo");
         if (badVideo) badVideo.remove();
 
-        for (let infoCell of infoCells) {
-            infoCell.innerText = "";
+        for (let cell of cells) {
+            cell.innerText = "";
         }
 
         for (let countryElem of countryElements) {
@@ -33,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const badVideo = document.createElement("span");
                 badVideo.setAttribute("id", "badVideo");
                 badVideo.innerText = "Not been able to fetch the info for this video.";
-                form.appendChild(badVideo);
+                if (header) header.appendChild(badVideo);
                 return;
             }
 
