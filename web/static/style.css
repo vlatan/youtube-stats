@@ -129,14 +129,13 @@ body {
     display: flex;
     flex-direction: column;
     gap: var(--gap);
-    min-height: 100vh;
     margin-bottom: var(--gap);
+    margin: var(--gap) auto;
 }
 
 header.primary-header {
     width: min(var(--max-site-width), 100% - (2 * var(--gap)));
     margin: 0 auto;
-    padding-top: var(--gap);
     display: flex;
     align-items: center;
     gap: var(--gap);
@@ -194,18 +193,23 @@ table.table-container {
 table.table-container,
 table.table-container th,
 table.table-container td {
-    border: 1px solid black;
+    border: 1px solid gray;
     border-collapse: collapse;
     text-align: left;
     padding: 3%;
 }
 
-table.table-container #tableValue {
-    width: 60%;
+table.table-container td {
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 table.table-container th {
     font-weight: bold;
+}
+
+table.table-container #tableValue {
+    width: 60%;
 }
 
 /* Background-color of the odd rows */
@@ -221,6 +225,8 @@ table.table-container tr:nth-child(odd) {
 .map_container {
     width: 100%;
     margin: 0 auto;
+    border: 1px solid gray;
+    padding: var(--gap);
 }
 
 path {
