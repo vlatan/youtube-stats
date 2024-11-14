@@ -136,7 +136,7 @@ header.primary-header {
     width: var(--max-site-width);
     margin: 0 auto;
     display: flex;
-    /* align-items: center; */
+    align-items: center;
     gap: var(--gap);
 }
 
@@ -170,6 +170,25 @@ main.main-content {
 #myForm {
     display: flex;
     gap: 5px;
+}
+
+input.video-id {
+    padding: 5px 10px;
+    border: 1px solid gray;
+    border-radius: 5px;
+}
+
+button.submit-button {
+    border-radius: 5px;
+    padding: 5px 15px;
+    border: 1px solid gray;
+    background: lightgray;
+    cursor: pointer;
+}
+
+button.submit-button:hover,
+button.submit-button:focus {
+    background: gray;
 }
 
 #content {
@@ -225,6 +244,7 @@ table.table-container tr:nth-child(odd) {
     width: 100%;
     margin: 0 auto;
     border: 1px solid gray;
+    border-radius: 5px;
     padding: var(--gap);
 }
 

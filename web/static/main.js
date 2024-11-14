@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!response.ok) {
                 const badVideo = document.createElement("span");
                 badVideo.setAttribute("id", "badVideo");
-                badVideo.innerText = "Not been able to fetch the info for this video.";
+                badVideo.innerText = "Not been able to fetch the metadata for this video.";
                 if (header) header.appendChild(badVideo);
                 return;
             }
