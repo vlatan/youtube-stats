@@ -1,22 +1,23 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // const content = document.getElementById('content')
-    const form = document.getElementById('myForm');
-    const badVideo = document.getElementById('badVideo');
-    const infoCells = document.querySelectorAll('td[data-id]');
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("myForm");
+    const infoCells = document.querySelectorAll("td[data-id]");
 
-    var countryElements = document.getElementById('countries').children;
+    var countryElements = document.getElementById("countries").children;
     for (let countryElem of countryElements) {
-        let countryName = countryElem.getAttribute('data-name');
+        let countryName = countryElem.getAttribute("data-name");
         countryElem.innerHTML = `<title>${countryName}</title>`;
     }
 
-    form.addEventListener('submit', event => {
+    form.addEventListener("submit", event => {
 
         // reset the previous data, styles and events after submit
-        badVideo.innerText = "";
+        const badVideo = document.getElementById("badVideo");
+        if (badVideo !== null) badVideo.remove();
+
         for (let infoCell of infoCells) {
             infoCell.innerText = "";
         }
+
         for (let countryElem of countryElements) {
             countryElem.removeAttribute("style");
             countryElem.onmouseenter = () => { };
@@ -25,19 +26,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         event.preventDefault();
         const formData = new FormData(event.target);
-        fetch('/', {
-            method: 'POST',
+        fetch("/", {
+            method: "POST",
             body: formData
         }).then(response => {
             if (!response.ok) {
+                const badVideo = document.createElement("span");
+                badVideo.setAttribute("id", "badVideo");
                 badVideo.innerText = "Not been able to fetch the info for this video.";
+                form.appendChild(badVideo);
                 return;
             }
 
             response.json().then(data => {
-                // const regionRestricted = data.regionRestricted.length ? data.regionRestricted : false;
-                // const defaultLanguage = data.defaultLanguage || "none";
-
                 for (const [key, value] of Object.entries(data)) {
                     document.querySelector(`td[data-id=${key}]`).innerText = value;
                 }

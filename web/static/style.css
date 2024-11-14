@@ -130,6 +130,7 @@ body {
     flex-direction: column;
     gap: var(--gap);
     min-height: 100vh;
+    margin-bottom: var(--gap);
 }
 
 header.primary-header {
@@ -160,9 +161,17 @@ header.primary-header h1 a img {
 }
 
 main.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
     flex-grow: 1;
     width: min(var(--max-site-width), 100% - (2 * var(--gap)));
     margin: 0 auto;
+}
+
+#myForm {
+    display: flex;
+    gap: 5px;
 }
 
 #content {
