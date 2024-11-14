@@ -1,8 +1,7 @@
 :root {
-    --default-gap: clamp(1rem, 1rem + 2vw, 2rem);
-    --large-font-size: var(--default-gap);
-    --gap: var(--default-gap);
-    --max-site-width: 1300px;
+    --gap: clamp(1rem, 1rem + 2vw, 2rem);
+    --large-font-size: var(--gap);
+    --max-site-width: min(1300px, 100% - (2 * var(--gap)));
 }
 
 
@@ -134,10 +133,10 @@ body {
 }
 
 header.primary-header {
-    width: min(var(--max-site-width), 100% - (2 * var(--gap)));
+    width: var(--max-site-width);
     margin: 0 auto;
     display: flex;
-    align-items: center;
+    /* align-items: center; */
     gap: var(--gap);
 }
 
@@ -164,7 +163,7 @@ main.main-content {
     flex-direction: column;
     gap: var(--gap);
     flex-grow: 1;
-    width: min(var(--max-site-width), 100% - (2 * var(--gap)));
+    width: var(--max-site-width);
     margin: 0 auto;
 }
 
