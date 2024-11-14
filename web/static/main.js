@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // reset the previous data, styles and events after submit
         const badVideo = document.getElementById("badVideo");
-        if (badVideo !== null) badVideo.remove();
+        if (badVideo) badVideo.remove();
 
         for (let infoCell of infoCells) {
             infoCell.innerText = "";
@@ -25,10 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         event.preventDefault();
-        const formData = new FormData(event.target);
         fetch("/", {
             method: "POST",
-            body: formData
+            body: new FormData(event.target)
         }).then(response => {
             if (!response.ok) {
                 const badVideo = document.createElement("span");
@@ -49,12 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         continue
                     }
                     country.style.fill = "red";
-                    country.onmouseenter = event => {
-                        event.target.style.fill = "crimson";
-                    }
-                    country.onmouseleave = event => {
-                        event.target.style.fill = "red";
-                    }
+                    country.onmouseenter = event => { event.target.style.fill = "crimson"; }
+                    country.onmouseleave = event => { event.target.style.fill = "red"; }
                 }
             });
         });
