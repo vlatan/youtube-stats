@@ -241,6 +241,7 @@ table.table-container tr:nth-child(odd) {
 } */
 
 .map_container {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -249,6 +250,14 @@ table.table-container tr:nth-child(odd) {
     border: 1px solid gray;
     border-radius: 5px;
     padding: var(--gap);
+}
+
+#svgContainer::after {
+    position: absolute;
+    font-size: 0.75rem;
+    left: 10px;
+    bottom: 5px;
+    content: 'scale: ' attr(data-scale);
 }
 
 path {

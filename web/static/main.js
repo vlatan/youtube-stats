@@ -65,7 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const svgImage = document.getElementById("svgImage");
     const svgContainer = document.getElementById("svgContainer");
-    // const zoomValue = document.getElementById("zoomValue");
     var vb = svgImage.getAttribute("viewBox").split(" ").map(parseFloat);
     var viewBox = { x: vb[0], y: vb[1], w: vb[2], h: vb[3] };
     const svgSize = { w: svgImage.clientWidth, h: svgImage.clientHeight };
@@ -86,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
         var dy = dh * my / svgSize.h;
         viewBox = { x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w - dw, h: viewBox.h - dh };
         scale = svgSize.w / viewBox.w;
-        // zoomValue.innerText = `${Math.round(scale * 100) / 100}`;
+        svgContainer.setAttribute("data-scale", `${Math.round(scale * 100) / 100}`)
         svgImage.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
     }
 
