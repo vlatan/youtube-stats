@@ -173,14 +173,14 @@ main.main-content {
 }
 
 input.video-id {
-    padding: 5px 10px;
+    padding: 4px 10px;
     border: 1px solid gray;
     border-radius: 5px;
 }
 
 button.submit-button {
     border-radius: 5px;
-    padding: 5px 15px;
+    padding: 4px 15px;
     border: 1px solid gray;
     background: lightgray;
     cursor: pointer;
@@ -241,6 +241,9 @@ table.table-container tr:nth-child(odd) {
 } */
 
 .map_container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     margin: 0 auto;
     border: 1px solid gray;
