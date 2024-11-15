@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
         countryElem.innerHTML = `<title>${countryName}</title>`;
     }
 
-    form.addEventListener("submit", event => {
+    form.onsubmit = e => {
 
         // reset the previous data, styles and events after submit
         const badVideo = document.getElementById("badVideo");
@@ -25,10 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
             countryElem.onmouseleave = () => { };
         }
 
-        event.preventDefault();
+        e.preventDefault();
         fetch("/", {
             method: "POST",
-            body: new FormData(event.target)
+            body: new FormData(e.target)
         }).then(response => {
             if (!response.ok) {
                 const badVideo = document.createElement("span");
@@ -56,12 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         continue
                     }
                     country.style.fill = "red";
-                    country.onmouseenter = event => { event.target.style.fill = "crimson"; }
-                    country.onmouseleave = event => { event.target.style.fill = "red"; }
+                    country.onmouseenter = e => { e.target.style.fill = "crimson"; }
+                    country.onmouseleave = e => { e.target.style.fill = "red"; }
                 }
             });
         });
-    });
+    };
 
     const svgImage = document.getElementById("svgImage");
     const svgContainer = document.getElementById("svgContainer");
@@ -80,8 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
         var h = viewBox.h;
         var mx = e.offsetX;
         var my = e.offsetY;
-        var dw = w * Math.sign(e.deltaY) * 0.05;
-        var dh = h * Math.sign(e.deltaY) * 0.05;
+        var dw = w * Math.sign(e.deltaY) * -0.15;
+        var dh = h * Math.sign(e.deltaY) * -0.15;
         var dx = dw * mx / svgSize.w;
         var dy = dh * my / svgSize.h;
         viewBox = { x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w - dw, h: viewBox.h - dh };
