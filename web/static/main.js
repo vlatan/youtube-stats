@@ -3,26 +3,48 @@ document.addEventListener("DOMContentLoaded", () => {
     const cells = document.querySelectorAll("td[data-id]");
     const header = document.querySelector("header.primary-header");
 
-    var countryElements = document.getElementById("countries").children;
-    for (let countryElem of countryElements) {
-        let countryName = countryElem.getAttribute("data-name");
-        countryElem.innerHTML = `<title>${countryName}</title>`;
+    // svg map variables
+    const svgImage = document.getElementById("svgImage");
+    const svgContainer = document.getElementById("svgContainer");
+    const vb = svgImage.getAttribute("viewBox").split(" ").map(parseFloat);
+    const svgSize = { w: vb[2], h: vb[3] };
+
+    var viewBox = { x: vb[0], y: vb[1], w: vb[2], h: vb[3] };
+    var isPanning = false;
+    var startPoint = { x: 0, y: 0 };
+    var endPoint = { x: 0, y: 0 };
+    var scale = 1;
+
+    // set titles to countries on the map
+    const countries = document.getElementById("countries").children;
+    for (let country of countries) {
+        let countryName = country.getAttribute("data-name");
+        country.innerHTML = `<title>${countryName}</title>`;
     }
 
+    // handle form submit
     form.onsubmit = e => {
 
         // reset the previous data, styles and events after submit
         const badVideo = document.getElementById("badVideo");
         if (badVideo) badVideo.remove();
 
+        viewBox = { x: vb[0], y: vb[1], w: vb[2], h: vb[3] };
+        isPanning = false;
+        startPoint = { x: 0, y: 0 };
+        endPoint = { x: 0, y: 0 };
+        scale = 1;
+        svgContainer.setAttribute("data-scale", scale);
+        svgImage.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
+
         for (let cell of cells) {
             cell.innerText = "";
         }
 
-        for (let countryElem of countryElements) {
-            countryElem.removeAttribute("style");
-            countryElem.onmouseenter = () => { };
-            countryElem.onmouseleave = () => { };
+        for (let country of countries) {
+            country.removeAttribute("style");
+            country.onmouseenter = () => { };
+            country.onmouseleave = () => { };
         }
 
         e.preventDefault();
@@ -63,15 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    const svgImage = document.getElementById("svgImage");
-    const svgContainer = document.getElementById("svgContainer");
-    var vb = svgImage.getAttribute("viewBox").split(" ").map(parseFloat);
-    var viewBox = { x: vb[0], y: vb[1], w: vb[2], h: vb[3] };
-    const svgSize = { w: svgImage.clientWidth, h: svgImage.clientHeight };
-    var isPanning = false;
-    var startPoint = { x: 0, y: 0 };
-    var endPoint = { x: 0, y: 0 };
-    var scale = 1;
 
     svgContainer.onmousewheel = e => {
         e.preventDefault();
