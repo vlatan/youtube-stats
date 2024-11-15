@@ -2,6 +2,13 @@
 
 Supply a YouTube video ID to get some of the essential info about the video.
 
+
+## Config
+
+Create an `.env` file with `YOUTUBE_API_KEY` variable or export it to your environment.
+
+## Installation
+
 Build CLI and WEB binaries and start a webserver.
 ```
 make run
@@ -22,3 +29,7 @@ Clean up.
 ```
 make clean
 ```
+
+## License
+
+[![License: MIT](https://img.shields.io/github/license/vlatan/youtube-stats?label=License)](/LICENSE "License: MIT")
