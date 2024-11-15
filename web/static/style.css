@@ -186,9 +186,9 @@ button.submit-button {
     cursor: pointer;
 }
 
-button.submit-button:hover,
-button.submit-button:focus {
+button.submit-button:hover {
     background: gray;
+    color: white;
 }
 
 #content {
@@ -257,7 +257,7 @@ table.table-container tr:nth-child(odd) {
     font-size: 0.75rem;
     left: 10px;
     bottom: 5px;
-    content: 'scale: ' attr(data-scale);
+    content: "scale: " attr(data-scale);
 }
 
 path {
