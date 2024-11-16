@@ -2,6 +2,10 @@
     --gap: clamp(1rem, 1rem + 2vw, 2rem);
     --large-font-size: var(--gap);
     --max-site-width: min(1300px, 100% - (2 * var(--gap)));
+    --border-color: hsl(0, 0%, 20%);
+    --border: 1px solid var(--border-color);
+    --font-color: rgb(230, 237, 243);
+    --background-color: rgb(20, 20, 20);
 }
 
 
@@ -86,9 +90,9 @@ html {
 }
 
 body {
-    /* overflow-y: scroll; */
-    color: white;
-    background-color: black;
+    color: var(--font-color);
+    font-weight: 300;
+    background-color: var(--background-color);
 }
 
 a {
@@ -108,7 +112,6 @@ h4,
 h5,
 h6 {
     line-height: 1;
-    /* color: #313131; */
     text-rendering: optimizeLegibility;
 }
 
@@ -170,25 +173,22 @@ main.main-content {
 
 input.video-id {
     padding: 4px 10px;
-    border: 1px solid lightgray;
+    border: var(--border);
     background: transparent;
-    color: white;
-    border-radius: 5px;
+    color: inherit;
     outline: none;
 }
 
 button.submit-button {
-    border-radius: 5px;
     padding: 4px 15px;
-    border: 1px solid lightgray;
+    border: var(--border);
     background: transparent;
-    color: white;
+    color: inherit;
     cursor: pointer;
 }
 
 button.submit-button:hover {
-    background: gray;
-    color: white;
+    background: var(--border-color);
 }
 
 #badVideo {
@@ -207,15 +207,13 @@ table.table-container {
     word-break: break-word;
     width: 100%;
     text-align: left;
-    font-weight: 300;
-    border-radius: 5px;
     margin: 0;
 }
 
 table.table-container,
 table.table-container th,
 table.table-container td {
-    border: 1px solid gray;
+    border: var(--border);
     border-collapse: collapse;
     text-align: left;
     padding: 3%;
@@ -227,7 +225,7 @@ table.table-container td {
 }
 
 table.table-container th {
-    font-weight: bold;
+    font-weight: 700;
 }
 
 table.table-container #tableValue {
@@ -241,7 +239,7 @@ table.table-container #tableValue {
     justify-content: center;
     width: 100%;
     margin: 0 auto;
-    border: 1px solid gray;
+    border: var(--border);
     padding: var(--gap);
 }
 
@@ -254,10 +252,10 @@ table.table-container #tableValue {
 }
 
 path {
-    fill: lightgray;
-    stroke: gray;
+    fill: var(--border-color);
+    stroke: hsl(0, 0%, 30%);
 }
 
 path:hover {
-    fill: gray;
+    fill: hsl(0, 0%, 30%);
 }
