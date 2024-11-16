@@ -15,6 +15,10 @@ make run
 ```
 Access the web app on `localhost:8080`.
 
+
+![YouTube Metadata Web App](./screenshot.png "YouTube Metadata Web App")
+
+
 Use the CLI.
 ```
 ./cli jNQXAC9IVRw

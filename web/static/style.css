@@ -1,6 +1,6 @@
 :root {
-    --gap: clamp(1rem, 1rem + 2vw, 2rem);
-    --large-font-size: var(--gap);
+    --gap: clamp(0.5rem, 0.25rem + 2vw, 2rem);
+    --large-font-size: clamp(1.5rem, 0.25rem + 2vw, 2rem);
     --max-site-width: min(1300px, 100% - (2 * var(--gap)));
     --border-color: hsl(0, 0%, 20%);
     --border: 1px solid var(--border-color);
@@ -136,6 +136,8 @@ header.primary-header {
     margin: 0 auto;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    /* justify-content: center; */
     gap: var(--gap);
 }
 
@@ -155,15 +157,6 @@ header.primary-header h1 a {
 header.primary-header h1 a img {
     width: clamp(1rem, 1rem + 2vw, 1.5rem);
     height: auto;
-}
-
-main.main-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap);
-    flex-grow: 1;
-    width: var(--max-site-width);
-    margin: 0 auto;
 }
 
 #myForm {
@@ -195,7 +188,10 @@ button.submit-button:hover {
     color: red;
 }
 
-#content {
+main.content {
+    flex-grow: 1;
+    width: var(--max-site-width);
+    margin: 0 auto;
     display: grid;
     grid-template-columns: 35% 1fr;
     gap: var(--gap);
@@ -254,4 +250,13 @@ path {
 
 path:hover {
     fill: hsl(0, 0%, 30%);
+}
+
+
+/* ======================== MEDIA QUERIES ======================== */
+
+@media screen and (max-width: 1050px) {
+    main.content {
+        grid-template-columns: 1fr;
+    }
 }
