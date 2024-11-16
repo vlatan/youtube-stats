@@ -1,6 +1,6 @@
 :root {
     --gap: clamp(0.5rem, 0.25rem + 2vw, 2rem);
-    --large-font-size: clamp(1.5rem, 0.25rem + 2vw, 2rem);
+    --large-font-size: clamp(1.5rem, 1rem + 0.75vw, 1.7rem);
     --max-site-width: min(1300px, 100% - (2 * var(--gap)));
     --border-color: hsl(0, 0%, 20%);
     --border: 1px solid var(--border-color);

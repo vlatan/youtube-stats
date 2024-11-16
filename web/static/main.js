@@ -2,6 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("myForm");
     const cells = document.querySelectorAll("td[data-id]");
     const header = document.querySelector("header.primary-header");
+    const restrictedColor = "hsl(39, 100%, 35%)"
+    const restrictedColorHover = "hsl(39, 100%, 40%)"
 
     // svg map variables
     const svgImage = document.getElementById("svgImage");
@@ -55,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!response.ok) {
                 const badVideo = document.createElement("span");
                 badVideo.setAttribute("id", "badVideo");
-                badVideo.innerText = "Not been able to fetch the metadata for this video.";
+                badVideo.innerText = "Not been able to fetch the metadata.";
                 if (header) header.appendChild(badVideo);
                 return;
             }
@@ -77,9 +79,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!country) {
                         continue
                     }
-                    country.style.fill = "red";
-                    country.onmouseenter = e => { e.target.style.fill = "crimson"; }
-                    country.onmouseleave = e => { e.target.style.fill = "red"; }
+                    country.style.fill = restrictedColor;
+                    country.onmouseenter = e => { e.target.style.fill = restrictedColorHover; }
+                    country.onmouseleave = e => { e.target.style.fill = restrictedColor; }
                 }
             });
         });
