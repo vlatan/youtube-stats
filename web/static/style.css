@@ -170,6 +170,7 @@ input.video-id {
     background: transparent;
     color: inherit;
     outline: none;
+    width: min(300px, 100%);
 }
 
 button.submit-button {
