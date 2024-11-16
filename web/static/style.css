@@ -216,16 +216,12 @@ table.table-container td {
     border: var(--border);
     border-collapse: collapse;
     text-align: left;
-    padding: 3%;
-}
-
-table.table-container td {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 1.5% 3%;
 }
 
 table.table-container th {
     font-weight: 700;
+    padding: 3%;
 }
 
 table.table-container #tableValue {
