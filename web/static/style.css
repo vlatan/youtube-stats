@@ -96,13 +96,8 @@ body {
 }
 
 a {
-    color: #1967d2;
+    color: var(--font-color);
     text-decoration: none;
-}
-
-a:focus,
-a:hover {
-    text-decoration: underline;
 }
 
 h1,
