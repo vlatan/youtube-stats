@@ -213,12 +213,12 @@ table.table-container td {
     border: var(--border);
     border-collapse: collapse;
     text-align: left;
-    padding: 1.5% 3%;
+    padding: 0.4375rem 0.875rem;
 }
 
 table.table-container th {
     font-weight: 700;
-    padding: 3%;
+    padding: 0.875rem;
 }
 
 table.table-container #tableValue {
