@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-
+    // handle zoom on the map
     svgContainer.onmousewheel = e => {
         e.preventDefault();
         var w = viewBox.w;
