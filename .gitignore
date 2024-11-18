@@ -1,5 +1,5 @@
 .env
-check
 notes.txt
 .vscode/
-web/static/*.min*
+*.min.js
+*.min.css
