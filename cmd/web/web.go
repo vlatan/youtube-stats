@@ -36,16 +36,18 @@ var home = template.Must(template.ParseFiles("web/templates/index.html"))
 
 func main() {
 
-	err := minifyStaticFiles("web/static")
+	staticDir := "web/static"
+
+	err := minifyStaticFiles(staticDir)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	staticHandler := http.FileServer(http.Dir(staticDir))
+	staticHandler = http.StripPrefix("/static/", staticHandler)
+
 	godotenv.Load()
 	mux := http.NewServeMux()
-
-	staticHandler := http.FileServer(http.Dir("web/static"))
-	staticHandler = http.StripPrefix("/static/", staticHandler)
 
 	mux.Handle("GET /static/", staticHandler)
 	mux.HandleFunc("GET /{$}", getHandler)
@@ -62,6 +64,7 @@ func minifyStaticFiles(root string) error {
 	m.AddFunc("text/css", css.Minify)
 	m.AddFuncRegexp(validJS, js.Minify)
 
+	// function used to process each file/dir in the root, including the root
 	walkDirFunc := func(path string, info fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -83,9 +86,8 @@ func minifyStaticFiles(root string) error {
 			return err
 		}
 
-		// insert "min" into the path
+		// split the file path on dot
 		pathParts := strings.Split(path, ".")
-		minPath := pathParts[0] + ".min." + pathParts[1]
 
 		// set media type (just css or js)
 		mediatype := "text/css"
@@ -99,7 +101,8 @@ func minifyStaticFiles(root string) error {
 			return err
 		}
 
-		// write to file
+		// insert "min" into the path and write to disk
+		minPath := pathParts[0] + ".min." + pathParts[1]
 		err = os.WriteFile(minPath, b, 0644)
 		if err != nil {
 			return err
