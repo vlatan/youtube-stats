@@ -2,3 +2,4 @@
 check
 notes.txt
 .vscode/
+web/static/*.min*

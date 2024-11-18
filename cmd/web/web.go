@@ -2,13 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
-	"text/template"
+	"strings"
 
 	"github.com/joho/godotenv"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/css"
+	"github.com/tdewolff/minify/v2/js"
 	common "github.com/vlatan/youtube-stats/internal"
 )
 
@@ -25,18 +31,89 @@ type Video struct {
 }
 
 var validID = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
+var validJS = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
 var home = template.Must(template.ParseFiles("web/templates/index.html"))
 
 func main() {
+
+	err := minifyStaticFiles("web/static")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	godotenv.Load()
 	mux := http.NewServeMux()
+
 	staticHandler := http.FileServer(http.Dir("web/static"))
-	mux.Handle("GET /static/", http.StripPrefix("/static/", staticHandler))
+	staticHandler = http.StripPrefix("/static/", staticHandler)
+
+	mux.Handle("GET /static/", staticHandler)
 	mux.HandleFunc("GET /{$}", getHandler)
 	mux.HandleFunc("POST /{$}", postHandler)
+
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
 
+// Create minified versions of the static files on disk within the same
+// static directory with ".min" inserted before their file extension.
+func minifyStaticFiles(root string) error {
+
+	m := minify.New()
+	m.AddFunc("text/css", css.Minify)
+	m.AddFuncRegexp(validJS, js.Minify)
+
+	walkDirFunc := func(path string, info fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// skip directories
+		if info.IsDir() {
+			return nil
+		}
+
+		// skip minified files
+		if strings.Contains(info.Name(), ".min.") {
+			return nil
+		}
+
+		// read the file
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		// insert "min" into the path
+		pathParts := strings.Split(path, ".")
+		minPath := pathParts[0] + ".min." + pathParts[1]
+
+		// set media type (just css or js)
+		mediatype := "text/css"
+		if pathParts[1] == "js" {
+			mediatype = "application/javascript"
+		}
+
+		// minify the content
+		b, err = m.Bytes(mediatype, b)
+		if err != nil {
+			return err
+		}
+
+		// write to file
+		err = os.WriteFile(minPath, b, 0644)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	return filepath.WalkDir(root, walkDirFunc)
+
+}
+
+// Handle GET request from the caller
+// by loading a HTML template to the response.
 func getHandler(w http.ResponseWriter, r *http.Request) {
 	err := home.Execute(w, nil)
 	if err != nil {
@@ -45,12 +122,15 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Handle POST request by getting the video ID from the form,
+// passing that ID to the YouTube API and returning a JSON
+// response to the caller (writing to the http.ResponseWriter).
 func postHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var apiKey string = os.Getenv("YOUTUBE_API_KEY")
 	if len(apiKey) == 0 {
-		log.Fatal("Please set YOUTUBE_API_KEY environment variable.")
+		log.Println("Please set YOUTUBE_API_KEY environment variable.")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
