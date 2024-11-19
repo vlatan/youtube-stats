@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/tdewolff/minify/v2"
@@ -36,6 +38,7 @@ type Video struct {
 type fileInfo struct {
 	bytes     []byte
 	mediatype string
+	etag      string
 }
 
 type cachedStaticFiles map[string]fileInfo
@@ -106,7 +109,16 @@ func parseStaticFiles(m *minify.M, root string) cachedStaticFiles {
 			return err
 		}
 
-		sf[info.Name()] = fileInfo{b, mediatype}
+		// construct eTag
+		modTime := time.Now()
+		fs, err := os.Stat(path)
+		if err == nil {
+			modTime = fs.ModTime()
+		}
+		etag := fmt.Sprintf("\"%d%d\"", fs.Size(), modTime.Unix())
+
+		// save all the file info in the struct
+		sf[info.Name()] = fileInfo{b, mediatype, etag}
 
 		return nil
 	}
@@ -166,6 +178,9 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", fb.mediatype)
+	w.Header().Set("Cache-Control", "max-age=31536000")
+	w.Header().Set("Etag", fb.etag)
+
 	if _, err := w.Write(fb.bytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
