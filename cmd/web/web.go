@@ -30,36 +30,35 @@ type Video struct {
 	Duration         string   `json:"duration"`
 }
 
+type fileInfo struct {
+	bytes     []byte
+	mediatype string
+}
+
+type staticFiles map[string]fileInfo
+
 var validID = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
 var validJS = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
 var home = template.Must(template.ParseFiles("web/templates/index.html"))
 
 func main() {
 
-	staticDir := "web/static"
-
-	err := minifyStaticFiles(staticDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	staticHandler := http.FileServer(http.Dir(staticDir))
-	staticHandler = http.StripPrefix("/static/", staticHandler)
+	staticFiles := cacheStaticFiles("web/static")
+	staticHandler := makeStaticHandler(staticFiles)
 
 	godotenv.Load()
 	mux := http.NewServeMux()
 
-	mux.Handle("GET /static/", staticHandler)
+	mux.HandleFunc("GET /static/", staticHandler)
 	mux.HandleFunc("GET /{$}", getHandler)
 	mux.HandleFunc("POST /{$}", postHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
 
-// Create minified versions of the static files on disk within the same
-// static directory with ".min" inserted before their file extension.
-func minifyStaticFiles(root string) error {
-
+// Create minified versions of the static files and cache them in memory.
+func cacheStaticFiles(root string) staticFiles {
+	sf := staticFiles{}
 	m := minify.New()
 	m.AddFunc("text/css", css.Minify)
 	m.AddFuncRegexp(validJS, js.Minify)
@@ -101,18 +100,34 @@ func minifyStaticFiles(root string) error {
 			return err
 		}
 
-		// insert "min" into the path and write to disk
-		minPath := pathParts[0] + ".min." + pathParts[1]
-		err = os.WriteFile(minPath, b, 0644)
-		if err != nil {
-			return err
-		}
+		sf[info.Name()] = fileInfo{b, mediatype}
 
 		return nil
 	}
 
-	return filepath.WalkDir(root, walkDirFunc)
+	if err := filepath.WalkDir(root, walkDirFunc); err != nil {
+		log.Println(err)
+	}
 
+	return sf
+}
+
+// Return http.HandlerFunc that writes static file from memory to response
+func makeStaticHandler(sf staticFiles) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := strings.Split(r.URL.Path, "/")
+		fb, ok := sf[name[len(name)-1]]
+
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		w.Header().Set("Content-Type", fb.mediatype)
+		if _, err := w.Write(fb.bytes); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
 }
 
 // Handle GET request from the caller
