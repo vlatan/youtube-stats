@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"html/template"
 	"io/fs"
@@ -41,8 +42,8 @@ type cachedStaticFiles map[string]fileInfo
 
 var validID = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
 var validJS = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
-var templates = template.Must(parseTemplates("web/templates/index.html"))
 var staticFiles = parseStaticFiles("web/static")
+var templates = template.Must(parseTemplates("web/templates/index.html"))
 
 func main() {
 
@@ -54,35 +55,6 @@ func main() {
 	mux.HandleFunc("POST /{$}", postHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
-}
-
-// Custom parse templates function that minifies the HTML
-// as per the tdewolff/minify docs
-func parseTemplates(filenames ...string) (*template.Template, error) {
-	m := minify.New()
-	m.AddFunc("text/html", html.Minify)
-
-	var tmpl *template.Template
-	for _, filename := range filenames {
-		name := filepath.Base(filename)
-		if tmpl == nil {
-			tmpl = template.New(name)
-		} else {
-			tmpl = tmpl.New(name)
-		}
-
-		b, err := os.ReadFile(filename)
-		if err != nil {
-			return nil, err
-		}
-
-		mb, err := m.Bytes("text/html", b)
-		if err != nil {
-			return nil, err
-		}
-		tmpl.Parse(string(mb))
-	}
-	return tmpl, nil
 }
 
 // Create minified versions of the static files and cache them in memory.
@@ -145,6 +117,42 @@ func parseStaticFiles(root string) cachedStaticFiles {
 	return sf
 }
 
+// Custom function that minifies and parses the HTML templates
+// as per the tdewolff/minify docs. Also inserts inline SVG image/map where needed.
+func parseTemplates(filenames ...string) (*template.Template, error) {
+	m := minify.New()
+	m.AddFunc("text/html", html.Minify)
+
+	var tmpl *template.Template
+	for _, filename := range filenames {
+
+		b, err := os.ReadFile(filename)
+		if err != nil {
+			return nil, err
+		}
+
+		// inline the svg map if HTML id svgContainer present
+		svg := staticFiles["map.svg"].bytes
+		htmlTag := []byte("id=\"svgContainer\">")
+		svg = append(htmlTag, svg...)
+		b = bytes.Replace(b, htmlTag, svg, 1)
+
+		name := filepath.Base(filename)
+		if tmpl == nil {
+			tmpl = template.New(name)
+		} else {
+			tmpl = tmpl.New(name)
+		}
+
+		mb, err := m.Bytes("text/html", b)
+		if err != nil {
+			return nil, err
+		}
+		tmpl.Parse(string(mb))
+	}
+	return tmpl, nil
+}
+
 // Handle minified static file from cache
 func staticHandler(w http.ResponseWriter, r *http.Request) {
 	pathParts := strings.Split(r.URL.Path, "/")
@@ -165,8 +173,7 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 // Handle GET request from the caller
 // by loading a HTML template to the response.
 func getHandler(w http.ResponseWriter, r *http.Request) {
-	mapSVG := template.HTML(staticFiles["map.svg"].bytes)
-	err := templates.ExecuteTemplate(w, "index.html", mapSVG)
+	err := templates.ExecuteTemplate(w, "index.html", nil)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
