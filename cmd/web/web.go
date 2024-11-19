@@ -40,10 +40,11 @@ type fileInfo struct {
 
 type cachedStaticFiles map[string]fileInfo
 
+var m = minify.New()
 var validID = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
 var validJS = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
-var staticFiles = parseStaticFiles("web/static")
-var templates = template.Must(parseTemplates("web/templates/index.html"))
+var staticFiles = parseStaticFiles(m, "web/static")
+var templates = template.Must(parseTemplates(m, "web/templates/index.html"))
 
 func main() {
 
@@ -58,9 +59,9 @@ func main() {
 }
 
 // Create minified versions of the static files and cache them in memory.
-func parseStaticFiles(root string) cachedStaticFiles {
+func parseStaticFiles(m *minify.M, root string) cachedStaticFiles {
 	sf := cachedStaticFiles{}
-	m := minify.New()
+
 	m.AddFunc("text/css", css.Minify)
 	m.AddFuncRegexp(validJS, js.Minify)
 	m.AddFunc("image/svg+xml", svg.Minify)
@@ -119,8 +120,7 @@ func parseStaticFiles(root string) cachedStaticFiles {
 
 // Custom function that minifies and parses the HTML templates
 // as per the tdewolff/minify docs. Also inserts inline SVG image/map where needed.
-func parseTemplates(filenames ...string) (*template.Template, error) {
-	m := minify.New()
+func parseTemplates(m *minify.M, filenames ...string) (*template.Template, error) {
 	m.AddFunc("text/html", html.Minify)
 
 	var tmpl *template.Template
@@ -159,6 +159,7 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 	name := pathParts[len(pathParts)-1]
 	fb, ok := staticFiles[name]
 
+	// do not make the svg file accesable
 	if !ok || strings.HasSuffix(name, ".svg") {
 		http.NotFound(w, r)
 		return
