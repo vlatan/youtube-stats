@@ -115,7 +115,7 @@ func parseStaticFiles(m *minify.M, root string) cachedStaticFiles {
 		if err == nil {
 			modTime = fs.ModTime()
 		}
-		etag := fmt.Sprintf("\"%d%d\"", fs.Size(), modTime.Unix())
+		etag := fmt.Sprintf("\"%d%d%d\"", len(path), fs.Size(), modTime.Unix())
 
 		// save all the file info in the struct
 		sf[info.Name()] = fileInfo{b, mediatype, etag}
