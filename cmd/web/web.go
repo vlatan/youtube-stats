@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -12,7 +13,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/tdewolff/minify/v2"
@@ -59,110 +59,6 @@ func main() {
 	mux.HandleFunc("POST /{$}", postHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
-}
-
-// Create minified versions of the static files and cache them in memory.
-func parseStaticFiles(m *minify.M, root string) cachedStaticFiles {
-	sf := cachedStaticFiles{}
-
-	m.AddFunc("text/css", css.Minify)
-	m.AddFuncRegexp(validJS, js.Minify)
-	m.AddFunc("image/svg+xml", svg.Minify)
-
-	// function used to process each file/dir in the root, including the root
-	walkDirFunc := func(path string, info fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// skip directories
-		if info.IsDir() {
-			return nil
-		}
-
-		// skip minified files
-		if strings.Contains(info.Name(), ".min.") {
-			return nil
-		}
-
-		// read the file
-		b, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-
-		// split the file path on dot
-		pathParts := strings.Split(path, ".")
-
-		// set media type
-		mediatype := "text/css"
-		switch pathParts[1] {
-		case "js":
-			mediatype = "application/javascript"
-		case "svg":
-			mediatype = "image/svg+xml"
-		}
-
-		// minify the content
-		b, err = m.Bytes(mediatype, b)
-		if err != nil {
-			return err
-		}
-
-		// construct eTag
-		modTime := time.Now()
-		fs, err := os.Stat(path)
-		if err == nil {
-			modTime = fs.ModTime()
-		}
-		etag := fmt.Sprintf("\"%d%d%d\"", len(path), fs.Size(), modTime.Unix())
-
-		// save all the file info in the struct
-		sf[info.Name()] = fileInfo{b, mediatype, etag}
-
-		return nil
-	}
-
-	if err := filepath.WalkDir(root, walkDirFunc); err != nil {
-		log.Println(err)
-	}
-
-	return sf
-}
-
-// Custom function that minifies and parses the HTML templates
-// as per the tdewolff/minify docs. Also inserts inline SVG image/map where needed.
-func parseTemplates(m *minify.M, filenames ...string) (*template.Template, error) {
-	m.AddFunc("text/html", html.Minify)
-
-	var tmpl *template.Template
-	for _, filename := range filenames {
-
-		b, err := os.ReadFile(filename)
-		if err != nil {
-			return nil, err
-		}
-
-		// inline the svg map if HTML id svgContainer present
-		svg := staticFiles["map.svg"].bytes
-		htmlTag := []byte("id=\"svgContainer\">")
-		svg = append(htmlTag, svg...)
-		b = bytes.Replace(b, htmlTag, svg, 1)
-
-		name := filepath.Base(filename)
-		if tmpl == nil {
-			tmpl = template.New(name)
-		} else {
-			tmpl = tmpl.New(name)
-		}
-
-		mb, err := m.Bytes("text/html", b)
-		if err != nil {
-			return nil, err
-		}
-		tmpl.Parse(string(mb))
-	}
-	return tmpl, nil
 }
 
 // Handle minified static file from cache
@@ -239,4 +135,107 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 	if json.NewEncoder(w).Encode(video) != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+// Create minified versions of the static files and cache them in memory.
+func parseStaticFiles(m *minify.M, root string) cachedStaticFiles {
+	sf := cachedStaticFiles{}
+
+	m.AddFunc("text/css", css.Minify)
+	m.AddFuncRegexp(validJS, js.Minify)
+	m.AddFunc("image/svg+xml", svg.Minify)
+
+	// function used to process each file/dir in the root, including the root
+	walkDirFunc := func(path string, info fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// skip directories
+		if info.IsDir() {
+			return nil
+		}
+
+		// skip minified files
+		if strings.Contains(info.Name(), ".min.") {
+			return nil
+		}
+
+		// read the file
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		// split the file path on dot
+		pathParts := strings.Split(path, ".")
+
+		// set media type
+		mediatype := "text/css"
+		switch pathParts[1] {
+		case "js":
+			mediatype = "application/javascript"
+		case "svg":
+			mediatype = "image/svg+xml"
+		}
+
+		// minify the content
+		b, err = m.Bytes(mediatype, b)
+		if err != nil {
+			return err
+		}
+
+		// create Etag as a hexadecimal md5 hash of the file content
+		h := md5.New()
+		if _, err = h.Write(b); err != nil {
+			return err
+		}
+		etag := fmt.Sprintf("\"%x\"", h.Sum(nil))
+
+		// save all the file info in the struct
+		sf[info.Name()] = fileInfo{b, mediatype, etag}
+
+		return nil
+	}
+
+	if err := filepath.WalkDir(root, walkDirFunc); err != nil {
+		log.Println(err)
+	}
+
+	return sf
+}
+
+// Custom function that minifies and parses the HTML templates
+// as per the tdewolff/minify docs. Also inserts inline SVG image/map where needed.
+func parseTemplates(m *minify.M, filenames ...string) (*template.Template, error) {
+	m.AddFunc("text/html", html.Minify)
+
+	var tmpl *template.Template
+	for _, filename := range filenames {
+
+		b, err := os.ReadFile(filename)
+		if err != nil {
+			return nil, err
+		}
+
+		// inline the svg map if HTML id svgContainer present
+		svg := staticFiles["map.svg"].bytes
+		htmlTag := []byte("id=\"svgContainer\">")
+		svg = append(htmlTag, svg...)
+		b = bytes.Replace(b, htmlTag, svg, 1)
+
+		name := filepath.Base(filename)
+		if tmpl == nil {
+			tmpl = template.New(name)
+		} else {
+			tmpl = tmpl.New(name)
+		}
+
+		mb, err := m.Bytes("text/html", b)
+		if err != nil {
+			return nil, err
+		}
+		tmpl.Parse(string(mb))
+	}
+	return tmpl, nil
 }
