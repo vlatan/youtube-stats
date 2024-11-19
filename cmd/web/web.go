@@ -14,7 +14,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
+	"github.com/tdewolff/minify/v2/html"
 	"github.com/tdewolff/minify/v2/js"
+	"github.com/tdewolff/minify/v2/svg"
 	common "github.com/vlatan/youtube-stats/internal"
 )
 
@@ -35,16 +37,14 @@ type fileInfo struct {
 	mediatype string
 }
 
-type staticFiles map[string]fileInfo
+type cachedStaticFiles map[string]fileInfo
 
 var validID = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
 var validJS = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
-var home = template.Must(template.ParseFiles("web/templates/index.html"))
+var templates = template.Must(parseTemplates("web/templates/index.html"))
+var staticFiles = parseStaticFiles("web/static")
 
 func main() {
-
-	staticFiles := cacheStaticFiles("web/static")
-	staticHandler := makeStaticHandler(staticFiles)
 
 	godotenv.Load()
 	mux := http.NewServeMux()
@@ -56,12 +56,42 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
 
+// Custom parse templates function that minifies the HTML
+// as per the tdewolff/minify docs
+func parseTemplates(filenames ...string) (*template.Template, error) {
+	m := minify.New()
+	m.AddFunc("text/html", html.Minify)
+
+	var tmpl *template.Template
+	for _, filename := range filenames {
+		name := filepath.Base(filename)
+		if tmpl == nil {
+			tmpl = template.New(name)
+		} else {
+			tmpl = tmpl.New(name)
+		}
+
+		b, err := os.ReadFile(filename)
+		if err != nil {
+			return nil, err
+		}
+
+		mb, err := m.Bytes("text/html", b)
+		if err != nil {
+			return nil, err
+		}
+		tmpl.Parse(string(mb))
+	}
+	return tmpl, nil
+}
+
 // Create minified versions of the static files and cache them in memory.
-func cacheStaticFiles(root string) staticFiles {
-	sf := staticFiles{}
+func parseStaticFiles(root string) cachedStaticFiles {
+	sf := cachedStaticFiles{}
 	m := minify.New()
 	m.AddFunc("text/css", css.Minify)
 	m.AddFuncRegexp(validJS, js.Minify)
+	m.AddFunc("image/svg+xml", svg.Minify)
 
 	// function used to process each file/dir in the root, including the root
 	walkDirFunc := func(path string, info fs.DirEntry, err error) error {
@@ -88,10 +118,13 @@ func cacheStaticFiles(root string) staticFiles {
 		// split the file path on dot
 		pathParts := strings.Split(path, ".")
 
-		// set media type (just css or js)
+		// set media type
 		mediatype := "text/css"
-		if pathParts[1] == "js" {
+		switch pathParts[1] {
+		case "js":
 			mediatype = "application/javascript"
+		case "svg":
+			mediatype = "image/svg+xml"
 		}
 
 		// minify the content
@@ -112,28 +145,28 @@ func cacheStaticFiles(root string) staticFiles {
 	return sf
 }
 
-// Return http.HandlerFunc that writes static file from memory to response
-func makeStaticHandler(sf staticFiles) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		name := strings.Split(r.URL.Path, "/")
-		fb, ok := sf[name[len(name)-1]]
+// Handle minified static file from cache
+func staticHandler(w http.ResponseWriter, r *http.Request) {
+	pathParts := strings.Split(r.URL.Path, "/")
+	name := pathParts[len(pathParts)-1]
+	fb, ok := staticFiles[name]
 
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
+	if !ok || strings.HasSuffix(name, ".svg") {
+		http.NotFound(w, r)
+		return
+	}
 
-		w.Header().Set("Content-Type", fb.mediatype)
-		if _, err := w.Write(fb.bytes); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
+	w.Header().Set("Content-Type", fb.mediatype)
+	if _, err := w.Write(fb.bytes); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
 // Handle GET request from the caller
 // by loading a HTML template to the response.
 func getHandler(w http.ResponseWriter, r *http.Request) {
-	err := home.Execute(w, nil)
+	mapSVG := template.HTML(staticFiles["map.svg"].bytes)
+	err := templates.ExecuteTemplate(w, "index.html", mapSVG)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
