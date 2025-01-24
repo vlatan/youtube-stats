@@ -53,12 +53,12 @@ func main() {
 
 	godotenv.Load()
 	mux := http.NewServeMux()
-
 	mux.HandleFunc("GET /static/", staticHandler)
 	mux.HandleFunc("GET /{$}", getHandler)
 	mux.HandleFunc("POST /{$}", postHandler)
-
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	port := 8080
+	fmt.Printf("Server running on http://localhost:%d\n", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
 }
 
 // Handle minified static file from cache
