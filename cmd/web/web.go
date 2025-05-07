@@ -20,6 +20,7 @@ import (
 	"github.com/tdewolff/minify/v2/html"
 	"github.com/tdewolff/minify/v2/js"
 	"github.com/tdewolff/minify/v2/svg"
+	resources "github.com/vlatan/youtube-stats"
 	common "github.com/vlatan/youtube-stats/internal"
 )
 
@@ -47,7 +48,7 @@ var m = minify.New()
 var validID = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
 var validJS = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
 var staticFiles = parseStaticFiles(m, "web/static")
-var templates = template.Must(parseTemplates(m, "web/templates/index.html"))
+var templates = template.Must(parseTemplates(m, "web/templates", "index.html"))
 
 func main() {
 
@@ -138,7 +139,13 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Create minified versions of the static files and cache them in memory.
-func parseStaticFiles(m *minify.M, root string) cachedStaticFiles {
+func parseStaticFiles(m *minify.M, dir string) cachedStaticFiles {
+
+	staticFS, err := fs.Sub(resources.Files, dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	sf := cachedStaticFiles{}
 
 	m.AddFunc("text/css", css.Minify)
@@ -162,7 +169,7 @@ func parseStaticFiles(m *minify.M, root string) cachedStaticFiles {
 		}
 
 		// read the file
-		b, err := os.ReadFile(path)
+		b, err := fs.ReadFile(staticFS, path)
 		if err != nil {
 			return err
 		}
@@ -198,7 +205,7 @@ func parseStaticFiles(m *minify.M, root string) cachedStaticFiles {
 		return nil
 	}
 
-	if err := filepath.WalkDir(root, walkDirFunc); err != nil {
+	if err := fs.WalkDir(staticFS, ".", walkDirFunc); err != nil {
 		log.Println(err)
 	}
 
@@ -207,13 +214,19 @@ func parseStaticFiles(m *minify.M, root string) cachedStaticFiles {
 
 // Custom function that minifies and parses the HTML templates
 // as per the tdewolff/minify docs. Also inserts inline SVG image/map where needed.
-func parseTemplates(m *minify.M, filenames ...string) (*template.Template, error) {
+func parseTemplates(m *minify.M, dir string, filenames ...string) (*template.Template, error) {
+
+	templatesFS, err := fs.Sub(resources.Files, dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	m.AddFunc("text/html", html.Minify)
 
 	var tmpl *template.Template
 	for _, filename := range filenames {
 
-		b, err := os.ReadFile(filename)
+		b, err := fs.ReadFile(templatesFS, filename)
 		if err != nil {
 			return nil, err
 		}
