@@ -51,7 +51,6 @@ var staticFiles = parseStaticFiles(m, "web/static")
 var templates = template.Must(parseTemplates(m, "web/templates/index.html"))
 
 func main() {
-
 	godotenv.Load()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /static/", staticHandler)
