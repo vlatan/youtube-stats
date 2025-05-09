@@ -72,7 +72,7 @@ func newIPRateLimiter(r rate.Limit, b int, cleanupInterval, maxIdleTime time.Dur
 		maxIdleTime:     maxIdleTime,
 	}
 
-	// Start cleanup routine
+	// Start cleanup routine in the background
 	go limiter.cleanupLoop()
 
 	return limiter
