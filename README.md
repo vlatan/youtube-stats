@@ -34,6 +34,18 @@ Clean up.
 make clean
 ```
 
+## Run the Web App via Docker
+
+Build the image.
+```
+docker build -t yt-stats .
+```
+
+Run.
+```
+docker run -p 8080:8080 --env-file=.env yt-stats
+```
+
 ## License
 
 [![License: MIT](https://img.shields.io/github/license/vlatan/youtube-stats?label=License)](/LICENSE "License: MIT")
