@@ -180,7 +180,7 @@ button.submit-button:hover {
     background: var(--border-color);
 }
 
-#badVideo {
+.error-message {
     color: red;
 }
 

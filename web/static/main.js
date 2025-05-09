@@ -28,8 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
     form.onsubmit = e => {
 
         // reset the previous data, styles and events after submit
-        const badVideo = document.getElementById("badVideo");
-        if (badVideo) badVideo.remove();
+        const errorMessages = document.querySelectorAll(".error-message");
+        for (let em of errorMessages) { em.remove(); }
 
         viewBox = { x: vb[0], y: vb[1], w: vb[2], h: vb[3] };
         isPanning = false;
@@ -55,10 +55,12 @@ document.addEventListener("DOMContentLoaded", () => {
             body: new FormData(e.target)
         }).then(response => {
             if (!response.ok) {
-                const badVideo = document.createElement("span");
-                badVideo.setAttribute("id", "badVideo");
-                badVideo.innerText = "Not been able to fetch the metadata.";
-                if (header) header.appendChild(badVideo);
+                const errorMessage = document.createElement("span");
+                errorMessage.classList.add("error-message");
+                errorMessage.innerText = response.status === 429 ?
+                    "Too many requests. Please try again later." :
+                    "Not been able to fetch the metadata.";
+                if (header) header.appendChild(errorMessage);
                 return;
             }
 
