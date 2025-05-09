@@ -1,3 +1,3 @@
 # TODO
 
-* Distinguish too many requests message in Javascript.
+- Dockerize the app and deploy
