@@ -39,7 +39,7 @@ type Video struct {
 type fileInfo struct {
 	bytes     []byte
 	mediatype string
-	etag      string
+	Etag      string
 }
 
 type cachedStaticFiles map[string]fileInfo
@@ -75,7 +75,7 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", fb.mediatype)
 	w.Header().Set("Cache-Control", "max-age=31536000")
-	w.Header().Set("Etag", fb.etag)
+	w.Header().Set("Etag", fb.Etag)
 
 	if _, err := w.Write(fb.bytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -85,7 +85,7 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 // Handle GET request from the caller
 // by loading a HTML template to the response.
 func getHandler(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "index.html", nil)
+	err := templates.ExecuteTemplate(w, "index.html", staticFiles)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
@@ -187,14 +187,10 @@ func parseStaticFiles(m *minify.M, dir string) cachedStaticFiles {
 		}
 
 		// create Etag as a hexadecimal md5 hash of the file content
-		h := md5.New()
-		if _, err = h.Write(b); err != nil {
-			return err
-		}
-		etag := fmt.Sprintf("\"%x\"", h.Sum(nil))
+		Etag := fmt.Sprintf("%x", md5.Sum(b))
 
 		// save all the file info in the struct
-		sf[info.Name()] = fileInfo{b, mediatype, etag}
+		sf[info.Name()] = fileInfo{b, mediatype, Etag}
 
 		return nil
 	}

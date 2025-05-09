@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Metadata</title>
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" type="text/css" href='/static/style.css?ver={{ (index . "style.css").Etag }}'>
 </head>
 
 <body>
@@ -74,6 +74,7 @@
         </main>
     </div>
 </body>
-<script defer src="static/main.js"></script>
+<script defer src=' static/main.js?ver={{ (index . "main.js" ).Etag }}'>
+</script>
 
 </html>
