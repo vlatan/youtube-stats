@@ -194,14 +194,15 @@ func parseStaticFiles(m *minify.M, dir string) cachedStaticFiles {
 		}
 
 		// create Etag as a hexadecimal md5 hash of the file content
-		Etag := fmt.Sprintf("%x", md5.Sum(b))
+		etag := fmt.Sprintf("%x", md5.Sum(b))
 
-		// save all the file info in the struct
-		sf[info.Name()] = fileInfo{b, mediatype, Etag}
+		// save all the data in the struct
+		sf[info.Name()] = fileInfo{b, mediatype, etag}
 
 		return nil
 	}
 
+	// walk the directory and process each file
 	if err := fs.WalkDir(resources.Files, dir, walkDirFunc); err != nil {
 		log.Println(err)
 	}
