@@ -26,6 +26,9 @@ import (
 	"golang.org/x/time/rate"
 )
 
+type Middleware func(http.HandlerFunc) http.HandlerFunc
+type cachedStaticFiles map[string]fileInfo
+
 type Video struct {
 	Id               string   `json:"id"`
 	Title            string   `json:"title"`
@@ -44,8 +47,6 @@ type fileInfo struct {
 	Etag      string
 }
 
-type cachedStaticFiles map[string]fileInfo
-
 var (
 	m           = minify.New()
 	validID     = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
@@ -60,13 +61,11 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /static/", staticHandler)
 	mux.HandleFunc("GET /{$}", getHandler)
-	mux.HandleFunc("POST /{$}", postHandler)
+	mux.HandleFunc("POST /{$}", applyMiddlewares(postHandler, limitMiddleware))
 
 	port := 8080
-	httpHandler := limitMiddleware(mux)
-
 	fmt.Printf("Server running on http://localhost:%d\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), httpHandler))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
 }
 
 // Handle minified static file from cache
@@ -246,14 +245,20 @@ func parseTemplates(m *minify.M, filepaths ...string) (*template.Template, error
 	return tmpl, nil
 }
 
-func limitMiddleware(next http.Handler) http.Handler {
+func applyMiddlewares(h http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
+	for _, middleware := range middlewares {
+		h = middleware(h)
+	}
+	return h
+}
+
+func limitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		limiter := limiter.getLimiter(r.RemoteAddr)
 		if !limiter.Allow() {
 			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 			return
 		}
-
-		next.ServeHTTP(w, r)
+		next(w, r)
 	})
 }
