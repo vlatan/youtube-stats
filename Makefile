@@ -1,14 +1,14 @@
 CLI_NAME=cli
-WEB_NAME=ui
+WEB_NAME=app
 
 build:
-	go build -o ${CLI_NAME} ./cmd/cli
-	go build -o ${WEB_NAME} ./cmd/app
+	go build -o ./bin/${CLI_NAME} ./cmd/cli
+	go build -o ./bin/${WEB_NAME} ./cmd/app
 
 run: build
-	./${WEB_NAME}
+	./bin/${WEB_NAME}
 
 clean:
 	go clean
-	rm ${CLI_NAME}
-	rm ${WEB_NAME}
+	rm ./bin/${CLI_NAME}
+	rm ./bin/${WEB_NAME}
