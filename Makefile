@@ -3,7 +3,7 @@ WEB_NAME=ui
 
 build:
 	go build -o ${CLI_NAME} ./cmd/cli
-	go build -o ${WEB_NAME} ./cmd/web
+	go build -o ${WEB_NAME} ./cmd/app
 
 run: build
 	./${WEB_NAME}
