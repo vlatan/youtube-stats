@@ -2,8 +2,8 @@ CLI_NAME=cli
 WEB_NAME=ui
 
 build:
-	go build -o ${CLI_NAME} cmd/cli/cli.go
-	go build -o ${WEB_NAME} cmd/web/web.go
+	go build -o ${CLI_NAME} ./cmd/cli
+	go build -o ${WEB_NAME} ./cmd/web
 
 run: build
 	./${WEB_NAME}
