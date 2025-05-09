@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/tdewolff/minify/v2"
@@ -22,6 +23,7 @@ import (
 	"github.com/tdewolff/minify/v2/svg"
 	resources "github.com/vlatan/youtube-stats"
 	common "github.com/vlatan/youtube-stats/internal"
+	"golang.org/x/time/rate"
 )
 
 type Video struct {
@@ -44,11 +46,14 @@ type fileInfo struct {
 
 type cachedStaticFiles map[string]fileInfo
 
-var m = minify.New()
-var validID = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
-var validJS = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
-var staticFiles = parseStaticFiles(m, "web/static")
-var templates = template.Must(parseTemplates(m, "web/templates/index.html"))
+var (
+	m           = minify.New()
+	validID     = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
+	validJS     = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
+	staticFiles = parseStaticFiles(m, "web/static")
+	templates   = template.Must(parseTemplates(m, "web/templates/index.html"))
+	limiter     = newIPRateLimiter(rate.Every(time.Minute), 5, 5*time.Minute, 10*time.Minute)
+)
 
 func main() {
 	godotenv.Load()
@@ -56,9 +61,12 @@ func main() {
 	mux.HandleFunc("GET /static/", staticHandler)
 	mux.HandleFunc("GET /{$}", getHandler)
 	mux.HandleFunc("POST /{$}", postHandler)
+
 	port := 8080
+	httpHandler := limitMiddleware(mux)
+
 	fmt.Printf("Server running on http://localhost:%d\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), httpHandler))
 }
 
 // Handle minified static file from cache
@@ -236,4 +244,16 @@ func parseTemplates(m *minify.M, filepaths ...string) (*template.Template, error
 		tmpl.Parse(string(mb))
 	}
 	return tmpl, nil
+}
+
+func limitMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		limiter := limiter.getLimiter(r.RemoteAddr)
+		if !limiter.Allow() {
+			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
