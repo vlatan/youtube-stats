@@ -21,12 +21,12 @@ Access the web app on `localhost:8080`.
 
 Use the CLI.
 ```
-./cli jNQXAC9IVRw
+./bin/cli jNQXAC9IVRw
 ```
 
 (Re)start the webserver.
 ```
-./ui
+./bin/app
 ```
 
 Clean up.
