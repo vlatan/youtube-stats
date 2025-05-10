@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -63,7 +64,7 @@ func main() {
 	mux.HandleFunc("GET /{$}", getHandler)
 	mux.HandleFunc("POST /{$}", applyMiddlewares(postHandler, limitMiddleware))
 
-	port := 8080
+	port := getPort("PORT", 8000)
 	fmt.Printf("Server running on http://localhost:%d\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
 }
@@ -262,4 +263,19 @@ func limitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next(w, r)
 	})
+}
+
+func getPort(key string, fallback int) int {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+
+	port, err := strconv.Atoi(value)
+	if err != nil {
+		log.Printf("Invalid value for %s: %s. Using default port %d.", key, value, fallback)
+		return fallback
+	}
+
+	return port
 }
