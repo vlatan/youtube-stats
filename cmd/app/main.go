@@ -64,7 +64,7 @@ func main() {
 	mux.HandleFunc("GET /{$}", getHandler)
 	mux.HandleFunc("POST /{$}", applyMiddlewares(postHandler, limitMiddleware))
 
-	port := getPort("PORT", 8000)
+	port := getPort("PORT", 8080)
 	fmt.Printf("Server running on http://localhost:%d\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
 }
