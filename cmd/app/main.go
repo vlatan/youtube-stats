@@ -12,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -66,12 +65,20 @@ func main() {
 	postHandler := applyMiddlewares(postHandler, limitMiddleware)
 	mux.HandleFunc("POST /{$}", postHandler)
 
-	port := getIntEnv("PORT", 8080)
 	origin := getStringEnv("CORS_DOMAIN", "http://localhost:8080")
 	corsDebug := getBoolEnv("CORS_DEBUG", false)
-	corsOptions := newCorsOptions([]string{origin}, corsDebug)
-	muxHandler := cors.New(corsOptions).Handler(mux)
 
+	corsOptions := cors.Options{
+		AllowedOrigins:   []string{origin},                          // What origins are allowed to access the API
+		AllowedMethods:   []string{"GET", "POST"},                   // All the methods the API uses
+		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Custom headers the frontend sends
+		AllowCredentials: true,                                      // Important if the frontend sends cookies or Authorization headers (e.g., JWTs in a secure cookie)
+		MaxAge:           86400,                                     // Cache preflight requests for 24 hours
+		Debug:            corsDebug,                                 // Set to false in production
+	}
+
+	port := getIntEnv("PORT", 8080)
+	muxHandler := cors.New(corsOptions).Handler(mux)
 	fmt.Printf("Server running on http://localhost:%d\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), muxHandler))
 }
@@ -252,41 +259,4 @@ func parseTemplates(m *minify.M, filepaths ...string) (*template.Template, error
 		tmpl.Parse(string(mb))
 	}
 	return tmpl, nil
-}
-
-func getIntEnv(key string, fallback int) int {
-	value := os.Getenv(key)
-	if len(value) == 0 {
-		return fallback
-	}
-
-	port, err := strconv.Atoi(value)
-	if err != nil {
-		log.Printf("Invalid value for %s: %s. Using default port %d.", key, value, fallback)
-		return fallback
-	}
-
-	return port
-}
-
-func getStringEnv(key, fallback string) string {
-	value := os.Getenv(key)
-	if len(value) == 0 {
-		return fallback
-	}
-	return value
-}
-
-func getBoolEnv(key string, fallback bool) bool {
-	value := os.Getenv(key)
-	if len(value) == 0 {
-		return fallback
-	}
-
-	b, err := strconv.ParseBool(value)
-	if err != nil {
-		log.Printf("Invalid value for %s: %s. Using default value %t.", key, value, fallback)
-		return fallback
-	}
-	return b
 }
