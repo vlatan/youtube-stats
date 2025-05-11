@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/rs/cors"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
 	"github.com/tdewolff/minify/v2/html"
@@ -73,22 +72,9 @@ func main() {
 	postHandler := applyMiddlewares(postHandler, limitMiddleware)
 	mux.HandleFunc("POST /{$}", postHandler)
 
-	origin := getStringEnv("ORIGIN", "http://localhost:8080")
-	debug := getBoolEnv("DEBUG", false)
-
-	corsOptions := cors.Options{
-		AllowedOrigins:   []string{origin},                          // What origins are allowed to access the API
-		AllowedMethods:   []string{"GET", "POST"},                   // All the methods the API uses
-		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Custom headers the frontend sends
-		AllowCredentials: true,                                      // Important if the frontend sends cookies or Authorization headers (e.g., JWTs in a secure cookie)
-		MaxAge:           86400,                                     // Cache preflight requests for 24 hours
-		Debug:            debug,                                     // Set to false in production
-	}
-
 	port := getIntEnv("PORT", 8080)
-	muxHandler := cors.New(corsOptions).Handler(mux)
 	fmt.Printf("Server running on http://localhost:%d\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), muxHandler))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
 }
 
 // Handle minified static file from cache

@@ -9,8 +9,6 @@ require (
 	google.golang.org/api v0.201.0
 )
 
-require github.com/rs/cors v1.11.1
-
 require (
 	cloud.google.com/go/auth v0.9.8 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.4 // indirect
