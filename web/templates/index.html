@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Metadata</title>
-    <link rel="stylesheet" type="text/css" href='/static/style.css?ver={{ (index . "style.css").Etag }}'>
+    <link rel="stylesheet" type="text/css" href='/static/style.css?ver={{ (index .StaticFiles "style.css").Etag }}'>
 </head>
 
 <body>
@@ -15,6 +15,7 @@
                 <h1>YouTube Metadata</h1>
             </a>
             <form id="myForm" method="POST">
+                <input type="hidden" name="{{ .CSRFFieldName }}" value="{{ .CSRFToken }}">
                 <input class="video-id" required pattern="[A-Za-z0-9_\-]{11}" type="text" name="id"
                     placeholder="YouTube video ID..." title="Valid YouTube ID only.">
                 <button class="submit-button" type="submit" value="Submit">Submit</button>
@@ -74,7 +75,7 @@
         </main>
     </div>
 </body>
-<script defer src=' static/main.js?ver={{ (index . "main.js" ).Etag }}'>
+<script defer src=' static/main.js?ver={{ (index .StaticFiles "main.js" ).Etag }}'>
 </script>
 
 </html>

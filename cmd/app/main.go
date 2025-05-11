@@ -28,6 +28,11 @@ import (
 )
 
 type cachedStaticFiles map[string]fileInfo
+type htmlData struct {
+	CSRFToken     string
+	CSRFFieldName string
+	StaticFiles   cachedStaticFiles
+}
 
 type Video struct {
 	Id               string   `json:"id"`
@@ -47,6 +52,9 @@ type fileInfo struct {
 	Etag      string
 }
 
+const csrfCookieName = "csrf_token"
+const csrfFieldName = "csrf_token"
+
 var (
 	m           = minify.New()
 	validID     = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
@@ -65,8 +73,8 @@ func main() {
 	postHandler := applyMiddlewares(postHandler, limitMiddleware)
 	mux.HandleFunc("POST /{$}", postHandler)
 
-	origin := getStringEnv("CORS_DOMAIN", "http://localhost:8080")
-	corsDebug := getBoolEnv("CORS_DEBUG", false)
+	origin := getStringEnv("ORIGIN", "http://localhost:8080")
+	debug := getBoolEnv("DEBUG", false)
 
 	corsOptions := cors.Options{
 		AllowedOrigins:   []string{origin},                          // What origins are allowed to access the API
@@ -74,7 +82,7 @@ func main() {
 		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Custom headers the frontend sends
 		AllowCredentials: true,                                      // Important if the frontend sends cookies or Authorization headers (e.g., JWTs in a secure cookie)
 		MaxAge:           86400,                                     // Cache preflight requests for 24 hours
-		Debug:            corsDebug,                                 // Set to false in production
+		Debug:            debug,                                     // Set to false in production
 	}
 
 	port := getIntEnv("PORT", 8080)
@@ -105,9 +113,24 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handle GET request from the caller
-// by loading a HTML template to the response.
 func getHandler(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "index.html", staticFiles)
+
+	csrfToken, err := generateCSRFToken()
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Include the CSRF token in data to be passed to the template
+	data := htmlData{
+		CSRFToken:     csrfToken,
+		CSRFFieldName: csrfFieldName,
+		StaticFiles:   staticFiles,
+	}
+
+	// Set the token in a HttpOnly cookie
+	setCSRFCookie(w, csrfCookieName, csrfToken)
+
+	err = templates.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
@@ -118,6 +141,24 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 // passing that ID to the YouTube API and returning a JSON
 // response to the caller (writing to the http.ResponseWriter).
 func postHandler(w http.ResponseWriter, r *http.Request) {
+
+	// Get the token from the HttpOnly cookie
+	cookieToken, err := getCSRFCookie(r, csrfCookieName)
+	if err != nil || cookieToken == "" {
+		http.Error(w, "CSRF cookie not found or invalid", http.StatusForbidden)
+		return
+	}
+
+	// Get the token from the form submission
+	formToken := r.FormValue(csrfFieldName)
+
+	// Compare the tokens
+	if formToken != cookieToken {
+		http.Error(w, "CSRF token mismatch!", http.StatusForbidden)
+		return
+	}
+
+	// This is going to be a JSON response
 	w.Header().Set("Content-Type", "application/json")
 
 	var apiKey string = os.Getenv("YOUTUBE_API_KEY")

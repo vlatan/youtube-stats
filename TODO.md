@@ -1,4 +1,3 @@
 # TODO
 
-* Always prioritize User Authentication and Authorization. This is the cornerstone of secure API design.
-* Implement CSRF tokens to protect authenticated users from malicious cross-site requests.
+* Authentication and Authorization to be able to use the API.
