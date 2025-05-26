@@ -10,6 +10,24 @@ import (
 	common "github.com/vlatan/youtube-stats/internal"
 )
 
+type htmlData struct {
+	CSRFToken     string
+	CSRFFieldName string
+	StaticFiles   cachedStaticFiles
+}
+
+type Video struct {
+	Id               string   `json:"id"`
+	Title            string   `json:"title"`
+	PrivacyStatus    string   `json:"privacyStatus"`
+	AgeRestriced     bool     `json:"ageRestriced"`
+	Embeddable       bool     `json:"embeddable"`
+	RegionRestricted []string `json:"regionRestricted"`
+	DefaultLanguage  string   `json:"defaultLanguage"`
+	LiveBroadcast    string   `json:"liveBroadcast"`
+	Duration         string   `json:"duration"`
+}
+
 // Handle GET request from the caller
 func getHandler(w http.ResponseWriter, r *http.Request) {
 

@@ -2,7 +2,12 @@ package main
 
 import (
 	"net/http"
+	"time"
+
+	"golang.org/x/time/rate"
 )
+
+var limiter = newIPRateLimiter(rate.Every(time.Minute), 5, 5*time.Minute, 10*time.Minute)
 
 type Middleware func(http.HandlerFunc) http.HandlerFunc
 

@@ -7,6 +7,9 @@ import (
 	"time"
 )
 
+const csrfCookieName = "csrf_token"
+const csrfFieldName = "csrf_token"
+
 // Generate a secure random CSRF token
 func generateCSRFToken() (string, error) {
 	b := make([]byte, 32) // 32 bytes is a good size for a token

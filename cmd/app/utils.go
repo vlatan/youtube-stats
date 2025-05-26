@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -19,6 +20,22 @@ import (
 	"github.com/tdewolff/minify/v2/svg"
 	resources "github.com/vlatan/youtube-stats"
 )
+
+var (
+	m           = minify.New()
+	validID     = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
+	validJS     = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
+	staticFiles = parseStaticFiles(m, "web/static")
+	templates   = template.Must(parseTemplates(m, "web/templates/index.html"))
+)
+
+type fileInfo struct {
+	bytes     []byte
+	mediatype string
+	Etag      string
+}
+
+type cachedStaticFiles map[string]fileInfo
 
 func getIntEnv(key string, fallback int) int {
 	value := os.Getenv(key)
