@@ -71,14 +71,15 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := r.FormValue("id")
-	if validID.FindStringSubmatch(id) == nil {
-		log.Println("Not a valid video ID:", id)
+	url := r.FormValue("content")
+	videoID, err := common.ExtractYouTubeID(url)
+	if err != nil {
+		log.Println(err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
 
-	response, err := common.GetVideo(apiKey, id)
+	response, err := common.GetVideo(apiKey, videoID)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusUnprocessableEntity)

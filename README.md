@@ -1,6 +1,6 @@
 # YouTube Metadata
 
-Supply a YouTube video ID to get some of the essential info about the video.
+Supply a YouTube video URL to get some of the essential info about the video.
 
 
 ## Config
@@ -10,9 +10,14 @@ Create an `.env` file with `YOUTUBE_API_KEY` variable or export it to your envir
 
 ## Installation
 
-Build CLI and WEB binaries and start a webserver.
+Build both CLI and WEB binaries and start the app.
 ```
 make run
+```
+
+Or just use `air` if you want live reloading for the app.
+```
+air
 ```
 
 Access the web app on `localhost:8080`.  
@@ -22,12 +27,7 @@ Access the web app on `localhost:8080`.
 
 Use the CLI.
 ```
-./bin/cli jNQXAC9IVRw
-```
-
-(Re)start the webserver.
-```
-./bin/app
+./bin/cli <url>
 ```
 
 Clean up.

@@ -16,8 +16,8 @@
             </a>
             <form id="myForm" method="POST">
                 <input type="hidden" name="{{ .CSRFFieldName }}" value="{{ .CSRFToken }}">
-                <input class="video-id" required pattern="[A-Za-z0-9_\-]{11}" type="text" name="id"
-                    placeholder="YouTube video ID..." title="Valid YouTube ID only.">
+                <input class="video-url" required type="text" name="content" placeholder="YouTube video URL..."
+                    title="Valid YouTube URL only.">
                 <button class="submit-button" type="submit" value="Submit">Submit</button>
             </form>
         </header>

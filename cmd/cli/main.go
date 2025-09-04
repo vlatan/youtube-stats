@@ -8,7 +8,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/fatih/color"
-	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 	common "github.com/vlatan/youtube-stats/internal"
 	"google.golang.org/api/youtube/v3"
 )
@@ -16,7 +16,7 @@ import (
 const borderLen = 19
 
 func main() {
-	godotenv.Load()
+
 	var apiKey string = os.Getenv("YOUTUBE_API_KEY")
 	if len(apiKey) == 0 {
 		log.Fatal("Please set YOUTUBE_API_KEY environment variable.")
@@ -24,13 +24,19 @@ func main() {
 
 	var args []string = os.Args
 	if len(args) <= 1 {
-		log.Fatal("Please provide a YouTube video ID")
+		log.Fatal("Please provide a YouTube video URL")
 	}
 
-	video, err := common.GetVideo(apiKey, args[1])
+	videoID, err := common.ExtractYouTubeID(args[1])
+	if err != nil {
+		log.Fatal("Could not extract the video ID")
+	}
+
+	video, err := common.GetVideo(apiKey, videoID)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	printVideoInfo(video)
 }
 

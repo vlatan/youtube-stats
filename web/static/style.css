@@ -159,7 +159,7 @@ header.primary-header h1 a img {
     gap: 5px;
 }
 
-input.video-id {
+input.video-url {
     padding: 4px 10px;
     border: var(--border);
     background: transparent;

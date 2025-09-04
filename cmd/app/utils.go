@@ -23,7 +23,6 @@ import (
 
 var (
 	m           = minify.New()
-	validID     = regexp.MustCompile("^([-a-zA-Z0-9_]{11})$")
 	validJS     = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
 	staticFiles = parseStaticFiles(m, "web/static")
 	templates   = template.Must(parseTemplates(m, "web/templates/index.html"))
