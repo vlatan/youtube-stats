@@ -5,7 +5,7 @@ Supply a YouTube video URL to get some of the essential info about the video.
 
 ## Config
 
-Create an `.env` file with `YOUTUBE_API_KEY` variable or export it to your environment.
+Create an `.env` file with `PORT` and `YOUTUBE_API_KEY` variables or export tme to your environment.
 
 
 ## Installation
@@ -20,7 +20,7 @@ Or just use `air` if you want live reloading for the app.
 air
 ```
 
-Access the web app on `localhost:8080`.  
+Access the web app on `localhost:<port>`.  
 
 ![YouTube Metadata Web App](./screenshot.png "YouTube Metadata Web App")
 
@@ -42,9 +42,9 @@ Build the image.
 docker build -t yt-stats .
 ```
 
-Run.
+Run on whichever port you set the app to listen.
 ```
-docker run -p 8080:8080 --env-file=.env yt-stats
+docker run -p <port>:<port> --env-file=.env yt-stats
 ```
 
 ## License

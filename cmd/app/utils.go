@@ -7,10 +7,8 @@ import (
 	"html/template"
 	"io/fs"
 	"log"
-	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/tdewolff/minify/v2"
@@ -35,21 +33,6 @@ type fileInfo struct {
 }
 
 type cachedStaticFiles map[string]fileInfo
-
-func getIntEnv(key string, fallback int) int {
-	value := os.Getenv(key)
-	if len(value) == 0 {
-		return fallback
-	}
-
-	port, err := strconv.Atoi(value)
-	if err != nil {
-		log.Printf("Invalid value for %s: %s. Using default port %d.", key, value, fallback)
-		return fallback
-	}
-
-	return port
-}
 
 // Create minified versions of the static files and cache them in memory.
 func parseStaticFiles(m *minify.M, dir string) cachedStaticFiles {
