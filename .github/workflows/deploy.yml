@@ -1,4 +1,4 @@
-name: Youtube Stats CD
+name: YouTube Stats CD
 
 on:
   push:
