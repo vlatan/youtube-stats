@@ -37,7 +37,7 @@ make clean
 
 ## Run the Web App via Docker
 
-Build an image and run the app.
+Build an image and run the app on `localhost:<port>`.
 ```
 docker build -t yt-stats .
 docker run -p <port>:<port> --env-file=.env yt-stats
