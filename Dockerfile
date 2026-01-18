@@ -18,6 +18,9 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /binary ./cmd/app
 # Use small image for the final stage
 FROM alpine:3.21
 
+# Image needs curl for the healthcheck
+RUN apk add --no-cache curl
+
 # Copy the binary from the build stage
 COPY --from=build /binary .
 
