@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs: 
   check-changes:
     runs-on: ubuntu-latest
@@ -35,10 +39,6 @@ jobs:
     # Deploy only if relevant files changed
     if: needs.check-changes.outputs.app == 'true'
     runs-on: ubuntu-latest
-
-    env:
-      REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
    
     permissions:
       contents: read
@@ -79,4 +79,12 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: ${{ secrets.DEPLOY_SCRIPT }}
+          script: |
+            set -e
+
+            # Pull fresh image
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+            # Recreate the service
+            docker compose -f ${{ secrets.COMPOSE_FILE }} \
+            up --detach ${{ secrets.SERVICE_NAME }}
