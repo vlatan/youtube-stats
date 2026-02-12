@@ -87,4 +87,4 @@ jobs:
 
             # Recreate the service
             docker compose -f ${{ secrets.COMPOSE_FILE }} \
-            up --detach ${{ secrets.SERVICE_NAME }}
+            up --detach --remove-orphans ${{ secrets.SERVICE_NAME }}
