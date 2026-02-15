@@ -1,43 +1,25 @@
 name: YouTube Stats CD
 
 on:
-  push:
+  push: &code_changes
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    paths:
+      - '.github/**'
+      - 'cmd/**'
+      - 'internal/**'
+      - 'web/**'
+      - 'Dockerfile'
+      - 'embed.go'
+      - 'go.mod'
+      - 'go.sum'
+  pull_request: *code_changes
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
-jobs: 
-  check-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      app: ${{ steps.filter.outputs.app }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-      
-      - name: Check for relevant file changes
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            app:
-              - '.github/**'
-              - 'cmd/**'
-              - 'internal/**'
-              - 'web/**'
-              - 'Dockerfile'
-              - 'embed.go'
-              - 'go.mod'
-              - 'go.sum'
-  
-  build-and-push:
-    needs: [check-changes]
-    # Deploy only if relevant files changed
-    if: needs.check-changes.outputs.app == 'true'
+jobs:  
+  build-push:
     runs-on: ubuntu-latest
    
     permissions:
@@ -68,7 +50,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    needs: build-and-push
+    needs: build-push
     runs-on: ubuntu-latest
 
     steps:
