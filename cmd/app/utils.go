@@ -16,14 +16,14 @@ import (
 	"github.com/tdewolff/minify/v2/html"
 	"github.com/tdewolff/minify/v2/js"
 	"github.com/tdewolff/minify/v2/svg"
-	resources "github.com/vlatan/youtube-stats"
+	"github.com/vlatan/youtube-stats/web"
 )
 
 var (
 	m           = minify.New()
 	validJS     = regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$")
-	staticFiles = parseStaticFiles(m, "web/static")
-	templates   = template.Must(parseTemplates(m, "web/templates/index.html"))
+	staticFiles = parseStaticFiles(m, "static")
+	templates   = template.Must(parseTemplates(m, "templates/index.html"))
 )
 
 type fileInfo struct {
@@ -60,7 +60,7 @@ func parseStaticFiles(m *minify.M, dir string) cachedStaticFiles {
 		}
 
 		// read the file
-		b, err := fs.ReadFile(resources.Files, path)
+		b, err := fs.ReadFile(web.Files, path)
 		if err != nil {
 			return err
 		}
@@ -93,7 +93,7 @@ func parseStaticFiles(m *minify.M, dir string) cachedStaticFiles {
 	}
 
 	// walk the directory and process each file
-	if err := fs.WalkDir(resources.Files, dir, walkDirFunc); err != nil {
+	if err := fs.WalkDir(web.Files, dir, walkDirFunc); err != nil {
 		log.Println(err)
 	}
 
@@ -109,7 +109,7 @@ func parseTemplates(m *minify.M, filepaths ...string) (*template.Template, error
 	var tmpl *template.Template
 	for _, fp := range filepaths {
 
-		b, err := fs.ReadFile(resources.Files, fp)
+		b, err := fs.ReadFile(web.Files, fp)
 		if err != nil {
 			return nil, err
 		}

@@ -9,7 +9,6 @@ on:
             - "internal/**"
             - "web/**"
             - "Dockerfile"
-            - "embed.go"
             - "go.mod"
             - "go.sum"
     pull_request: *code_changes
