@@ -4,7 +4,7 @@ FROM golang:1.27-alpine AS build
 WORKDIR /src
 
 # Copy the source code
-COPY go.mod go.sum embed.go ./
+COPY go.mod go.sum ./
 COPY web ./web
 COPY internal ./internal
 COPY cmd/app ./cmd/app
