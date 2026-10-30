@@ -11,6 +11,12 @@ import (
 )
 
 func main() {
+
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil {
+		log.Fatal("no valid port; ", err)
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /static/", staticHandler)
 	mux.HandleFunc("GET /{$}", getHandler)
@@ -27,11 +33,7 @@ func main() {
 		}
 	})
 
-	port, err := strconv.Atoi(os.Getenv("PORT"))
-	if err != nil {
-		log.Fatal("no valid port; ", err)
-	}
-
+	cop := http.NewCrossOriginProtection()
 	fmt.Printf("Server running on http://localhost:%d\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), cop.Handler(mux)))
 }

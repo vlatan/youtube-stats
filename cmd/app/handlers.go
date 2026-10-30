@@ -11,9 +11,7 @@ import (
 )
 
 type htmlData struct {
-	CSRFToken     string
-	CSRFFieldName string
-	StaticFiles   cachedStaticFiles
+	StaticFiles cachedStaticFiles
 }
 
 type Video struct {
@@ -31,19 +29,12 @@ type Video struct {
 // Handle GET request from the caller
 func getHandler(w http.ResponseWriter, r *http.Request) {
 
-	token, err := getCSRFToken(w, r)
-	if err != nil {
-		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
-	}
-
 	// Include the CSRF token in data to be passed to the template
 	data := htmlData{
-		CSRFToken:     token,
-		CSRFFieldName: csrfFieldName,
-		StaticFiles:   staticFiles,
+		StaticFiles: staticFiles,
 	}
 
-	err = templates.ExecuteTemplate(w, "index.html", data)
+	err := templates.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
@@ -54,12 +45,6 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 // passing that ID to the YouTube API and returning a JSON
 // response to the caller (writing to the http.ResponseWriter).
 func postHandler(w http.ResponseWriter, r *http.Request) {
-
-	// Get the the HttpOnly cookie
-	if !validateCSRFToken(r) {
-		http.Error(w, "CSRF token validation failed", http.StatusForbidden)
-		return
-	}
 
 	// This is going to be a JSON response
 	w.Header().Set("Content-Type", "application/json")

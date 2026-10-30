@@ -15,7 +15,6 @@
                 <h1>YouTube Metadata</h1>
             </a>
             <form id="myForm" method="POST">
-                <input type="hidden" name="{{ .CSRFFieldName }}" value="{{ .CSRFToken }}">
                 <input class="video-url" required type="text" name="content" placeholder="YouTube video URL..."
                     title="Valid YouTube URL only.">
                 <button class="submit-button" type="submit" value="Submit">Submit</button>
