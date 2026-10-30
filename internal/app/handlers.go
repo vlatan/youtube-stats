@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -33,13 +32,6 @@ func (a *App) Post(w http.ResponseWriter, r *http.Request) {
 
 	// This is going to be a JSON response
 	w.Header().Set("Content-Type", "application/json")
-
-	var apiKey string = os.Getenv("YOUTUBE_API_KEY")
-	if len(apiKey) == 0 {
-		log.Println("Please set YOUTUBE_API_KEY environment variable.")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 
 	video, err := a.youtube.Video(r.Context(), r.FormValue("content"))
 	if err != nil {

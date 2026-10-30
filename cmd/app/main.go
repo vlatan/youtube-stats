@@ -7,12 +7,13 @@ import (
 )
 
 func main() {
+
 	app, err := app.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Run tne app
-	log.Fatal(app.Run())
-
+	if err := app.Run(); err != nil {
+		log.Println(err)
+	}
 }

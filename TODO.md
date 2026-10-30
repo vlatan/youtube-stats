@@ -1,3 +1,6 @@
 # TODO
 
-* Authentication and Authorization to be able to use the API.
+- Use localhost if host empty on the server
+- Execute template into buffer first and marshal the JSON first
+- Authentication and Authorization to be able to use the API
+

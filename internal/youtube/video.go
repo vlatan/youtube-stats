@@ -14,7 +14,7 @@ type Video struct {
 	Id               string   `json:"id"`
 	Title            string   `json:"title"`
 	PrivacyStatus    string   `json:"privacyStatus"`
-	AgeRestriced     bool     `json:"ageRestriced"`
+	AgeRestricted    bool     `json:"ageRestricted"`
 	Embeddable       bool     `json:"embeddable"`
 	RegionRestricted []string `json:"regionRestricted"`
 	DefaultLanguage  string   `json:"defaultLanguage"`
@@ -52,7 +52,7 @@ func (s *Service) Video(ctx context.Context, url string) (*Video, error) {
 		Id:               resp.Items[0].Id,
 		Title:            resp.Items[0].Snippet.Title,
 		PrivacyStatus:    resp.Items[0].Status.PrivacyStatus,
-		AgeRestriced:     ageRestriction(resp.Items[0]),
+		AgeRestricted:    ageRestriction(resp.Items[0]),
 		Embeddable:       resp.Items[0].Status.Embeddable,
 		RegionRestricted: regionRestriction(resp.Items[0]),
 		DefaultLanguage:  resp.Items[0].Snippet.DefaultLanguage,
