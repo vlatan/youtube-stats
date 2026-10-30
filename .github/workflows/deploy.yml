@@ -1,72 +1,78 @@
 name: YouTube Stats CD
 
 on:
-  push: &code_changes
-    branches: [ main ]
-    paths:
-      - '.github/**'
-      - 'cmd/**'
-      - 'internal/**'
-      - 'web/**'
-      - 'Dockerfile'
-      - 'embed.go'
-      - 'go.mod'
-      - 'go.sum'
-  pull_request: *code_changes
+    push: &code_changes
+        branches: [main]
+        paths:
+            - ".github/**"
+            - "cmd/**"
+            - "internal/**"
+            - "web/**"
+            - "Dockerfile"
+            - "embed.go"
+            - "go.mod"
+            - "go.sum"
+    pull_request: *code_changes
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+    REGISTRY: ghcr.io
+    IMAGE_NAME: ${{ github.repository }}
 
-jobs:  
-  build-push:
-    runs-on: ubuntu-latest
-   
-    permissions:
-      contents: read
-      packages: write
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+jobs:
+    build-push:
+        if: github.event_name == 'push'
+        runs-on: ubuntu-latest
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        permissions:
+            contents: read
+            packages: write
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            - name: Log in to the Container registry
+              uses: docker/login-action@v4
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy:
-    needs: build-push
-    runs-on: ubuntu-latest
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v4
 
-    steps:
-      - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@v1.2.4
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v7
+              with:
+                  context: .
+                  push: true
+                  tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
 
-            # Pull fresh image
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+    deploy:
+        needs: build-push
+        if: github.event_name == 'push'
+        runs-on: ubuntu-latest
 
-            # Recreate the service
-            docker compose -f ${{ secrets.COMPOSE_FILE }} \
-            up --detach --remove-orphans ${{ secrets.SERVICE_NAME }}
+        environment:
+            name: production
+            url: https://ytmeta.netrewrite.com
+
+        steps:
+            - name: Deploy to VPS via SSH
+              uses: appleboy/ssh-action@v1
+              with:
+                  host: ${{ secrets.VPS_HOST }}
+                  port: ${{ secrets.SSH_PORT }}
+                  username: ${{ secrets.VPS_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      set -e
+
+                      # Pull fresh image
+                      docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+                      # Recreate the service
+                      docker compose -f ${{ secrets.COMPOSE_FILE }} \
+                      up --detach --remove-orphans ${{ secrets.SERVICE_NAME }}
