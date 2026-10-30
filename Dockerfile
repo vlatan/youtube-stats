@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine AS build
+FROM golang:1.27-alpine AS build
 
 # Set destination for COPY
 WORKDIR /src
@@ -16,7 +16,7 @@ RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /binary ./cmd/app
 
 # Use small image for the final stage
-FROM alpine:3.21
+FROM alpine:3.24
 
 # Image needs curl for the healthcheck
 RUN apk add --no-cache curl
