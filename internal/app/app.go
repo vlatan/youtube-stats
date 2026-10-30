@@ -2,16 +2,24 @@ package app
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"html/template"
 	"net/http"
+	"os"
 	"regexp"
+	"strconv"
+	"time"
 
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
 	"github.com/tdewolff/minify/v2/html"
 	"github.com/tdewolff/minify/v2/js"
 	"github.com/tdewolff/minify/v2/svg"
+	"github.com/vlatan/youtube-stats/internal/limiter"
 	"github.com/vlatan/youtube-stats/internal/youtube"
+	"golang.org/x/time/rate"
 )
 
 const staticFs = "static"
@@ -23,12 +31,23 @@ type App struct {
 	youtube *youtube.Service
 	static  map[string]fileInfo
 	tmpl    *template.Template
+	limiter *limiter.Service
 	server  *http.Server
 }
 
-func New(ctx context.Context, apiKey string) (*App, error) {
+func New() (*App, error) {
 
-	ytsvc, err := youtube.New(ctx, apiKey)
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil {
+		return nil, err
+	}
+
+	apiKey := os.Getenv("YOUTUBE_API_KEY")
+	if len(apiKey) == 0 {
+		return nil, errors.New("missing youtube api key")
+	}
+
+	ytsvc, err := youtube.New(context.Background(), apiKey)
 	if err != nil {
 		return nil, err
 	}
@@ -58,9 +77,19 @@ func New(ctx context.Context, apiKey string) (*App, error) {
 		return nil, err
 	}
 
-	return &App{
+	app := &App{
 		youtube: ytsvc,
 		static:  staticFiles,
 		tmpl:    tmpl,
-	}, nil
+		limiter: limiter.New(rate.Every(time.Minute), 5, 5*time.Minute, 10*time.Minute),
+		server: &http.Server{
+			Addr:         fmt.Sprintf(":%d", port),
+			IdleTimeout:  time.Minute,
+			ReadTimeout:  10 * time.Second,
+			WriteTimeout: 30 * time.Second,
+		},
+	}
+
+	app.server.Handler = app.Handler()
+	return app, nil
 }

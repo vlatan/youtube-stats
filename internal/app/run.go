@@ -1,0 +1,42 @@
+package app
+
+import (
+	"fmt"
+	"net"
+	"net/http"
+)
+
+// Run runs the app by making the HTTP server listen and serve
+func (a *App) Run() error {
+
+	// Create a notification channel to receive a signal
+	// from when a shutdown is complete
+	done := make(chan struct{})
+
+	// Listen for SIGINT SIGTERM in a separate goroutine
+	// Gracefully shut down the server there if needed.
+	go a.Shutdown(done)
+
+	host, port, err := net.SplitHostPort(a.server.Addr)
+	if err != nil {
+		return err
+	}
+
+	if host == "" {
+		host = "0.0.0.0"
+	}
+
+	fmt.Printf("Server running on: http://%s:%s\n", host, port)
+
+	// If the HTTP server was shut down, meaning
+	// s.Server.Shutdown(ctx) method was called,
+	// ListenAndServe will return ErrServerClosed.
+	err = a.server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		return err
+	}
+
+	<-done // Wait for the graceful shutdown to complete
+
+	return nil
+}
