@@ -1,0 +1,76 @@
+package app
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+)
+
+type htmlData struct {
+	StaticFiles map[string]fileInfo
+}
+
+// Handle GET request from the caller
+func (a *App) Get(w http.ResponseWriter, r *http.Request) {
+
+	data := htmlData{
+		StaticFiles: a.static,
+	}
+
+	err := a.tmpl.ExecuteTemplate(w, "index.html", data)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+	}
+}
+
+// Handle POST request by getting the video ID from the form,
+// passing that ID to the YouTube API and returning a JSON
+// response to the caller (writing to the http.ResponseWriter).
+func (a *App) Post(w http.ResponseWriter, r *http.Request) {
+
+	// This is going to be a JSON response
+	w.Header().Set("Content-Type", "application/json")
+
+	var apiKey string = os.Getenv("YOUTUBE_API_KEY")
+	if len(apiKey) == 0 {
+		log.Println("Please set YOUTUBE_API_KEY environment variable.")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	video, err := a.youtube.Video(r.Context(), r.FormValue("content"))
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
+	}
+
+	// write JSON to response
+	if json.NewEncoder(w).Encode(video) != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+// Handle minified static file from cache
+func (a *App) Static(w http.ResponseWriter, r *http.Request) {
+	pathParts := strings.Split(r.URL.Path, "/")
+	name := pathParts[len(pathParts)-1]
+	fb, ok := a.static[name]
+
+	// do not make the svg file accesable
+	if !ok || strings.HasSuffix(name, ".svg") {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Header().Set("Content-Type", fb.mediatype)
+	w.Header().Set("Cache-Control", "max-age=31536000")
+	w.Header().Set("Etag", fb.Etag)
+
+	if _, err := w.Write(fb.bytes); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}

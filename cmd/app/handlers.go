@@ -6,30 +6,15 @@ import (
 	"net/http"
 	"os"
 	"strings"
-
-	common "github.com/vlatan/youtube-stats/internal"
 )
 
 type htmlData struct {
 	StaticFiles cachedStaticFiles
 }
 
-type Video struct {
-	Id               string   `json:"id"`
-	Title            string   `json:"title"`
-	PrivacyStatus    string   `json:"privacyStatus"`
-	AgeRestriced     bool     `json:"ageRestriced"`
-	Embeddable       bool     `json:"embeddable"`
-	RegionRestricted []string `json:"regionRestricted"`
-	DefaultLanguage  string   `json:"defaultLanguage"`
-	LiveBroadcast    string   `json:"liveBroadcast"`
-	Duration         string   `json:"duration"`
-}
-
 // Handle GET request from the caller
 func getHandler(w http.ResponseWriter, r *http.Request) {
 
-	// Include the CSRF token in data to be passed to the template
 	data := htmlData{
 		StaticFiles: staticFiles,
 	}
@@ -56,31 +41,11 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url := r.FormValue("content")
-	videoID, err := common.ExtractYouTubeID(url)
+	video, err := common.Video(r.Context(), r.FormValue("content"))
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
-	}
-
-	response, err := common.GetVideo(apiKey, videoID)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		return
-	}
-
-	video := Video{
-		Id:               response.Id,
-		Title:            response.Snippet.Title,
-		PrivacyStatus:    response.Status.PrivacyStatus,
-		AgeRestriced:     common.AgeRestriction(response),
-		Embeddable:       response.Status.Embeddable,
-		RegionRestricted: common.RegionRestriction(response),
-		DefaultLanguage:  response.Snippet.DefaultLanguage,
-		LiveBroadcast:    response.Snippet.LiveBroadcastContent,
-		Duration:         response.ContentDetails.Duration,
 	}
 
 	// write JSON to response

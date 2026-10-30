@@ -9,7 +9,6 @@ import (
 
 	"github.com/fatih/color"
 	_ "github.com/joho/godotenv/autoload"
-	common "github.com/vlatan/youtube-stats/internal"
 	"google.golang.org/api/youtube/v3"
 )
 

@@ -131,6 +131,7 @@ func parseTemplates(m *minify.M, filepaths ...string) (*template.Template, error
 		if err != nil {
 			return nil, err
 		}
+
 		tmpl.Parse(string(mb))
 	}
 	return tmpl, nil
