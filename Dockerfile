@@ -24,5 +24,7 @@ RUN apk add --no-cache curl
 # Copy the binary from the build stage
 COPY --from=build /binary .
 
+ENV HOST="0.0.0.0"
+
 # Run
 CMD ["/binary"]

@@ -9,7 +9,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/fatih/color"
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/vlatan/youtube-stats/internal/config"
 	"github.com/vlatan/youtube-stats/internal/youtube"
 )
 
@@ -22,12 +22,12 @@ type Service struct {
 
 func New(ctx context.Context) (*Service, error) {
 
-	apiKey := os.Getenv("YOUTUBE_API_KEY")
-	if len(apiKey) == 0 {
-		return nil, errors.New("missing youtube api key")
+	cfg, err := config.New()
+	if err != nil {
+		return nil, err
 	}
 
-	ytsvc, err := youtube.New(ctx, apiKey)
+	ytsvc, err := youtube.New(ctx, cfg.ApiKey)
 	if err != nil {
 		return nil, err
 	}

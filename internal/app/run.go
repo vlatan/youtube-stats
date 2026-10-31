@@ -22,10 +22,6 @@ func (a *App) Run() error {
 		return err
 	}
 
-	if host == "" {
-		host = "0.0.0.0"
-	}
-
 	fmt.Printf("Server running on: http://%s:%s\n", host, port)
 
 	// If the HTTP server was shut down, meaning
