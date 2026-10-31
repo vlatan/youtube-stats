@@ -26,5 +26,5 @@ run-app: build-app
 clean:
 	@echo "cleaning all binaries..."
 	@go clean
-	@rm ./bin/${APP_BINARY} ./bin/${CLI_BINARY}
+	@rm -f ./bin/*
 	
