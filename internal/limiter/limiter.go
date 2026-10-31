@@ -44,7 +44,8 @@ func New(r rate.Limit, b int, cleanupInterval, maxIdleTime time.Duration) *Servi
 // Middleware to limit the number of requests from a single IP address
 func (s *Service) Limit(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		limiter := s.get(r.RemoteAddr)
+		remoteAddr := remoteAddr(r)
+		limiter := s.get(remoteAddr)
 		if !limiter.Allow() {
 			code := http.StatusTooManyRequests
 			http.Error(w, http.StatusText(code), code)
