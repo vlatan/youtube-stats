@@ -22,11 +22,11 @@ Access the web app on `localhost:<port>`.
 
 ## Run the Web App via Docker
 
-Build an image and run the app on `localhost:<port>`.
+Build an image and run the app on `http://localhost:3000`.
 
 ```
 docker build -t yt-stats .
-docker run -p <port>:<port> --env-file=.env yt-stats
+docker run -e HOST=0.0.0.0 -p 3000:3000 --env-file=.env yt-stats
 ```
 
 ## License

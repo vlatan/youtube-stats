@@ -1,8 +1,8 @@
 package app
 
 import (
+	"errors"
 	"fmt"
-	"net"
 	"net/http"
 )
 
@@ -17,18 +17,13 @@ func (a *App) Run() error {
 	// Gracefully shut down the server there if needed.
 	go a.Shutdown(done)
 
-	host, port, err := net.SplitHostPort(a.server.Addr)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Server running on: http://%s:%s\n", host, port)
+	fmt.Printf("Server running on: http://%s\n", a.server.Addr)
 
 	// If the HTTP server was shut down, meaning
 	// s.Server.Shutdown(ctx) method was called,
 	// ListenAndServe will return ErrServerClosed.
-	err = a.server.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
+	err := a.server.ListenAndServe()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 

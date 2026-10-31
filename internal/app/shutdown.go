@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"log"
-	"log/slog"
 	"os/signal"
 	"syscall"
 	"time"
@@ -22,7 +21,7 @@ func (a *App) Shutdown(done chan<- struct{}) {
 	// This channel is closed by the sender and the program proceeds.
 	<-ctx.Done()
 
-	slog.Info("Shutting down gracefully, press Ctrl+C again to force.")
+	log.Println("Shutting down gracefully, press Ctrl+C again to force.")
 
 	// Cancel the context, stop watching for termination signals.
 	// Now if the user presses Ctrl+C again (or someone sends SIGINT, SIGTERM signal),

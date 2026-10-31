@@ -2,8 +2,8 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"html/template"
+	"net"
 	"net/http"
 	"regexp"
 	"time"
@@ -77,7 +77,7 @@ func New() (*App, error) {
 		tmpl:    tmpl,
 		limiter: lim,
 		server: &http.Server{
-			Addr:         fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+			Addr:         net.JoinHostPort(cfg.Host, cfg.Port),
 			IdleTimeout:  time.Minute,
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 30 * time.Second,
