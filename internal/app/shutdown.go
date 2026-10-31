@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os/signal"
 	"syscall"
 	"time"
@@ -21,7 +21,7 @@ func (a *App) Shutdown(done chan<- struct{}) {
 	// This channel is closed by the sender and the program proceeds.
 	<-ctx.Done()
 
-	log.Println("Shutting down gracefully, press Ctrl+C again to force.")
+	fmt.Println("Shutting down gracefully, press Ctrl+C again to force.")
 
 	// Cancel the context, stop watching for termination signals.
 	// Now if the user presses Ctrl+C again (or someone sends SIGINT, SIGTERM signal),
@@ -38,7 +38,7 @@ func (a *App) Shutdown(done chan<- struct{}) {
 	// Shutdown will wait for connections to return to idle,
 	// but in this case up to 5 seconds.
 	if err := a.server.Shutdown(ctx); err != nil {
-		log.Printf("Server forced to shutdown with error: %v", err)
+		fmt.Printf("Server forced to shutdown with error: %v\n", err)
 	}
 
 	// Notify the main goroutine that the shutdown is complete
