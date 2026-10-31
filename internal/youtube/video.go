@@ -88,7 +88,7 @@ func extractYouTubeID(rawURL string) (string, error) {
 func regionRestriction(video *youtube.Video) []string {
 	restriction := video.ContentDetails.RegionRestriction
 	if restriction == nil {
-		return nil
+		return []string{}
 	}
 	return restriction.Blocked
 }
