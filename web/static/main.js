@@ -86,7 +86,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.querySelector(`td[data-id=${key}]`).innerText =
                             value;
                     } catch (error) {
-                        console.error("Failed to assign inner text:", error);
+                        console.error(
+                            "Failed to assign inner text;",
+                            `Key: ${key}; Value: ${value};`,
+                            error,
+                        );
                     }
                 }
 
@@ -107,7 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         };
                     } catch (error) {
                         console.error(
-                            "Failed to fill country on the map:",
+                            "Failed to fill country on the map;",
+                            `Country: ${countryCode};`,
                             error,
                         );
                     }
