@@ -28,7 +28,7 @@ type Service struct {
 func New(r rate.Limit, b int, cleanupInterval, maxIdleTime time.Duration) *Service {
 	limiter := &Service{
 		ips:             make(map[string]*client),
-		mu:              &sync.RWMutex{},
+		mu:              new(sync.RWMutex),
 		rateLimit:       r,
 		burstSize:       b,
 		cleanupInterval: cleanupInterval,
@@ -45,8 +45,8 @@ func New(r rate.Limit, b int, cleanupInterval, maxIdleTime time.Duration) *Servi
 func (s *Service) Limit(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		remoteAddr := remoteAddr(r)
-		limiter := s.get(remoteAddr)
-		if !limiter.Allow() {
+		ipLimiter := s.get(remoteAddr)
+		if !ipLimiter.Allow() {
 			code := http.StatusTooManyRequests
 			http.Error(w, http.StatusText(code), code)
 			return
