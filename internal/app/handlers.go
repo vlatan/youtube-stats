@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -14,14 +15,19 @@ type htmlData struct {
 // Handle GET request from the caller
 func (a *App) Get(w http.ResponseWriter, r *http.Request) {
 
-	data := htmlData{
-		StaticFiles: a.static,
+	data := htmlData{a.static}
+
+	var buf bytes.Buffer
+	if err := a.tmpl.ExecuteTemplate(&buf, "index.html", data); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	err := a.tmpl.ExecuteTemplate(w, "index.html", data)
-	if err != nil {
+	// Write to response
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if _, err := buf.WriteTo(w); err != nil {
 		log.Println(err)
-		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
 	}
 }
 
@@ -30,9 +36,6 @@ func (a *App) Get(w http.ResponseWriter, r *http.Request) {
 // response to the caller (writing to the http.ResponseWriter).
 func (a *App) Post(w http.ResponseWriter, r *http.Request) {
 
-	// This is going to be a JSON response
-	w.Header().Set("Content-Type", "application/json")
-
 	video, err := a.youtube.Video(r.Context(), r.FormValue("content"))
 	if err != nil {
 		log.Println(err)
@@ -40,9 +43,18 @@ func (a *App) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// write JSON to response
-	if json.NewEncoder(w).Encode(video) != nil {
+	// Encode data to JSON
+	jsonData, err := json.Marshal(video)
+	if err != nil {
+		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Write to response
+	w.Header().Set("Content-Type", "application/json")
+	if _, err := w.Write(jsonData); err != nil {
+		log.Println(err)
 	}
 }
 
@@ -63,6 +75,6 @@ func (a *App) Static(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Etag", fb.Etag)
 
 	if _, err := w.Write(fb.bytes); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Println(err)
 	}
 }
