@@ -1,14 +1,30 @@
-CLI_NAME=cli
-WEB_NAME=app
+APP_BINARY=app
+CLI_BINARY=cli
+BUILD_FLAGS = CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 
+.PHONY: build
 build:
-	go build -o ./bin/${CLI_NAME} ./cmd/cli
-	go build -o ./bin/${WEB_NAME} ./cmd/app
+	@echo "building all binaries..."
+	@${BUILD_FLAGS} go build -o ./bin/${APP_BINARY} ./cmd/app
+	@${BUILD_FLAGS} go build -o ./bin/${CLI_BINARY} ./cmd/cli
 
-run: build
-	./bin/${WEB_NAME}
+.PHONY: build-app
+build-app:
+	@echo "building app..."
+	@${BUILD_FLAGS} go build -o ./bin/${APP_BINARY} ./cmd/app
 
+.PHONY: build-cli
+build-cli:
+	@echo "building cli..."
+	@${BUILD_FLAGS} go build -o ./bin/${CLI_BINARY} ./cmd/cli
+
+.PHONY: run-app 
+run-app: build-app
+	@./bin/${APP_BINARY}
+
+.PHONY: clean 
 clean:
-	go clean
-	rm ./bin/${CLI_NAME}
-	rm ./bin/${WEB_NAME}
+	@echo "cleaning all binaries..."
+	@go clean
+	@rm ./bin/${APP_BINARY} ./bin/${CLI_BINARY}
+	
