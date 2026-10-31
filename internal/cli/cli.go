@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -32,12 +31,11 @@ func New(ctx context.Context) (*Service, error) {
 		return nil, err
 	}
 
-	var args []string = os.Args
-	if len(args) <= 1 {
-		return nil, errors.New("please provide a YouTube video URL")
+	if len(os.Args) != 2 {
+		return nil, fmt.Errorf("usage: %s '<youtube-url>'", os.Args[0])
 	}
 
-	return &Service{ytsvc, args[1]}, nil
+	return &Service{ytsvc, os.Args[1]}, nil
 }
 
 func (s *Service) Run(ctx context.Context) error {
